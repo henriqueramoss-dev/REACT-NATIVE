@@ -1,0 +1,111 @@
+import { Platform, StyleSheet } from 'react-native';
+import type { ThemeColors } from '@/contexts/theme-context';
+
+const DISPLAY_FONT = Platform.select({
+  ios: 'Georgia',
+  android: 'serif',
+  web: 'Georgia, serif',
+});
+
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+  screen: { flex: 1, backgroundColor: colors.background },
+  content: { paddingHorizontal: 20, paddingTop: 28, paddingBottom: 44 },
+  eyebrow: { color: colors.goldText, fontSize: 11, fontWeight: '800', letterSpacing: 1.5 },
+  title: {
+    marginTop: 12,
+    color: colors.text,
+    fontFamily: DISPLAY_FONT,
+    fontSize: 30,
+    fontWeight: '800',
+    lineHeight: 37,
+  },
+  description: { marginTop: 10, color: colors.textMuted, fontSize: 15, lineHeight: 22 },
+  profileCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 30,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 18,
+    backgroundColor: colors.surface,
+    padding: 18,
+  },
+  profileImage: { width: 78, height: 78, borderRadius: 39 },
+  profilePlaceholder: {
+    width: 78,
+    height: 78,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 39,
+    backgroundColor: colors.text,
+  },
+  profileInitials: { color: colors.gold, fontFamily: DISPLAY_FONT, fontSize: 24, fontWeight: '900' },
+  profileText: { flex: 1, marginLeft: 16 },
+  profileName: { color: colors.text, fontFamily: DISPLAY_FONT, fontSize: 19, fontWeight: '800' },
+  profileEmail: { marginTop: 4, color: colors.textMuted, fontSize: 12 },
+  photoButton: { alignSelf: 'flex-start', marginTop: 10 },
+  photoButtonText: { color: colors.goldText, fontSize: 12, fontWeight: '900' },
+  section: {
+    marginTop: 18,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 18,
+    backgroundColor: colors.surface,
+    padding: 18,
+  },
+  sectionTitle: { color: colors.text, fontFamily: DISPLAY_FONT, fontSize: 19, fontWeight: '800' },
+  sectionDescription: { marginTop: 6, color: colors.textMuted, fontSize: 13, lineHeight: 19 },
+  sectionContent: { gap: 18, marginTop: 22 },
+  label: { marginBottom: 8, color: colors.textSecondary, fontSize: 13, fontWeight: '800' },
+  input: {
+    height: 54,
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
+    borderRadius: 12,
+    backgroundColor: colors.background,
+    paddingHorizontal: 14,
+    color: colors.text,
+    fontSize: 15,
+  },
+  primaryButton: {
+    height: 52,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+    backgroundColor: colors.gold,
+  },
+  primaryButtonText: { color: '#242629', fontSize: 14, fontWeight: '900' },
+  buttonPressed: { transform: [{ scale: 0.99 }] },
+  preference: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  preferenceText: { flex: 1 },
+  preferenceTitle: { color: colors.text, fontSize: 14, fontWeight: '800' },
+  preferenceDescription: { marginTop: 4, color: colors.textMuted, fontSize: 12, lineHeight: 17 },
+  themeOptions: { flexDirection: 'row', gap: 10 },
+  themeOption: {
+    flex: 1,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 12,
+    padding: 10,
+  },
+  themeOptionSelected: { borderWidth: 2, borderColor: colors.gold, padding: 9 },
+  themePreview: {
+    width: '100%',
+    height: 42,
+    justifyContent: 'flex-end',
+    borderRadius: 8,
+    backgroundColor: '#F2F3F5',
+    padding: 7,
+  },
+  themePreviewDark: { backgroundColor: '#17191C' },
+  themePreviewGold: { width: '62%', height: 7, borderRadius: 4, backgroundColor: '#C49A3A' },
+  themeOptionText: { marginTop: 8, color: colors.textMuted, fontSize: 11, fontWeight: '700' },
+  themeOptionTextSelected: { color: colors.text, fontWeight: '900' },
+  localNotice: { marginTop: 24, color: colors.placeholder, fontSize: 11, lineHeight: 17, textAlign: 'center' },
+  });
+}
+
+
+export default createStyles;
