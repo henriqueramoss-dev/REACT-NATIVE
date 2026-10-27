@@ -1,8 +1,8 @@
 import { Link, router } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
+import BrandMark from '@/components/brand-mark';
 import { useAppTheme } from '@/contexts/theme-context';
 import { create } from '@/services/biblioteca-api';
 import { isValidIsoDate, type Usuario } from '@/services/resources';
@@ -11,7 +11,8 @@ import { brToIso, maskDate } from '@/utils/dates';
 import { avisar } from '@/utils/dialogs';
 
 export default function SignUpScreen() {
-  const { colors, resolvedMode } = useAppTheme();
+  const { colors } = useAppTheme();
+  const inputColors = { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text };
 
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
@@ -67,11 +68,10 @@ export default function SignUpScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.background }]}>
-      <StatusBar style={resolvedMode === 'dark' ? 'light' : 'dark'} />
 
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.brand}>
-          <Text style={styles.brandSymbol}>B</Text>
+          <BrandMark />
           <Text style={[styles.brandName, { color: colors.text }]}>Biblioteca</Text>
         </View>
 
@@ -81,33 +81,33 @@ export default function SignUpScreen() {
         </Text>
 
         <View style={styles.form}>
-          <TextInput value={nome} onChangeText={setNome} placeholder="Nome completo" placeholderTextColor="#999" style={styles.input} />
-          <TextInput value={email} onChangeText={setEmail} placeholder="E-mail" placeholderTextColor="#999" keyboardType="email-address" autoCapitalize="none" style={styles.input} />
-          <TextInput value={telefone} onChangeText={setTelefone} placeholder="Telefone" placeholderTextColor="#999" keyboardType="phone-pad" style={styles.input} />
-          <TextInput value={endereco} onChangeText={setEndereco} placeholder="Endereço" placeholderTextColor="#999" style={styles.input} />
+          <TextInput value={nome} onChangeText={setNome} placeholder="Nome completo" placeholderTextColor={colors.placeholder} style={[styles.input, inputColors]} />
+          <TextInput value={email} onChangeText={setEmail} placeholder="E-mail" placeholderTextColor={colors.placeholder} keyboardType="email-address" autoCapitalize="none" style={[styles.input, inputColors]} />
+          <TextInput value={telefone} onChangeText={setTelefone} placeholder="Telefone" placeholderTextColor={colors.placeholder} keyboardType="phone-pad" style={[styles.input, inputColors]} />
+          <TextInput value={endereco} onChangeText={setEndereco} placeholder="Endereço" placeholderTextColor={colors.placeholder} style={[styles.input, inputColors]} />
           <TextInput
             value={dataNascimento}
             onChangeText={(text) => setDataNascimento(maskDate(text))}
             placeholder="Data de nascimento (DD/MM/AAAA)"
-            placeholderTextColor="#999"
+            placeholderTextColor={colors.placeholder}
             keyboardType="number-pad"
             maxLength={10}
-            style={styles.input}
+            style={[styles.input, inputColors]}
           />
 
-          <Pressable style={styles.button} onPress={handleSignUp} disabled={loading}>
-            <Text style={styles.buttonText}>{loading ? 'Cadastrando...' : 'Cadastrar'}</Text>
+          <Pressable style={[styles.button, { backgroundColor: colors.primary }]} onPress={handleSignUp} disabled={loading}>
+            <Text style={[styles.buttonText, { color: colors.onPrimary }]}>{loading ? 'Cadastrando...' : 'Cadastrar'}</Text>
           </Pressable>
         </View>
 
         <Text style={[styles.secondaryText, { color: colors.textMuted }]}>
           Já tem uma conta?{' '}
-          <Link href="/login" style={styles.link}>
+          <Link href="/login" style={[styles.link, { color: colors.primary }]}>
             Entrar
           </Link>
         </Text>
 
-        <Text style={styles.notice}>
+        <Text style={[styles.notice, { color: colors.placeholder }]}>
           A API atual não possui CPF nem senha no modelo de usuário; por isso esses campos não são enviados.
         </Text>
       </ScrollView>

@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
@@ -140,11 +141,11 @@ export default function FormScreen() {
           </View>
         )}
 
-        {loading ? (
-          <ActivityIndicator style={styles.loader} color={colors.gold} />
-        ) : (
-          <View style={styles.fields}>
-            {current.fields.map((field) => (
+        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          {loading ? (
+            <ActivityIndicator style={styles.loader} color={colors.primary} />
+          ) : (
+            current.fields.map((field) => (
               <FormField
                 key={field.name}
                 field={field}
@@ -152,20 +153,41 @@ export default function FormScreen() {
                 error={errors[field.name]}
                 onChange={(value) => setField(field.name, value)}
               />
-            ))}
-          </View>
-        )}
+            ))
+          )}
 
-        <Pressable
-          onPress={save}
-          disabled={saving || loading}
-          style={({ pressed }) => [styles.primaryButton, (saving || loading) && styles.disabled, pressed && styles.pressed]}
-        >
-          {saving ? <ActivityIndicator color="#242629" /> : <Text style={styles.primaryButtonText}>Salvar</Text>}
-        </Pressable>
+          <View style={styles.formActions}>
+            <Pressable
+              onPress={goBack}
+              style={({ pressed }) => [
+                styles.button,
+                { backgroundColor: pressed ? colors.surfaceMuted : colors.surface, borderColor: colors.border },
+              ]}
+            >
+              <Text style={[styles.buttonText, { color: colors.text }]}>Cancelar</Text>
+            </Pressable>
+            <Pressable
+              onPress={save}
+              disabled={saving || loading}
+              style={({ pressed }) => [
+                styles.button,
+                { backgroundColor: colors.primary, borderColor: colors.primary },
+                (saving || loading) && styles.disabled,
+                pressed && styles.pressed,
+              ]}
+            >
+              {saving ? (
+                <ActivityIndicator color={colors.onPrimary} />
+              ) : (
+                <Text style={[styles.buttonText, { color: colors.onPrimary }]}>Salvar</Text>
+              )}
+            </Pressable>
+          </View>
+        </View>
 
         {editing && !loading && (
           <Pressable onPress={deleteRecord} style={styles.deleteButton}>
+            <Ionicons name="trash-outline" size={17} color={colors.danger} />
             <Text style={[styles.deleteButtonText, { color: colors.danger }]}>
               Excluir {current.singular.toLowerCase()}
             </Text>
@@ -178,23 +200,35 @@ export default function FormScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  content: { flexGrow: 1, padding: 20, paddingBottom: 40 },
-  fields: { gap: 18 },
+  content: { flexGrow: 1, padding: 16, paddingTop: 20, paddingBottom: 40 },
   loader: { marginVertical: 40 },
   message: { marginTop: 40, textAlign: 'center', fontSize: 15 },
-  alert: { borderRadius: 10, padding: 12, marginBottom: 18 },
-  alertText: { fontSize: 14, fontWeight: 'bold' },
-  primaryButton: {
-    marginTop: 30,
-    height: 52,
+  alert: { borderRadius: 8, paddingVertical: 10, paddingHorizontal: 14, marginBottom: 16 },
+  alertText: { fontSize: 14, fontWeight: '500' },
+  card: {
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 20,
+    gap: 18,
+    shadowColor: '#141E32',
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
+  },
+  formActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10, paddingTop: 6 },
+  button: {
+    minWidth: 92,
+    height: 42,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#C49A3A',
-    borderRadius: 10,
   },
-  primaryButtonText: { color: '#242629', fontSize: 15, fontWeight: 'bold' },
-  disabled: { opacity: 0.6 },
-  pressed: { transform: [{ scale: 0.99 }] },
-  deleteButton: { marginTop: 14, height: 48, justifyContent: 'center', alignItems: 'center' },
-  deleteButtonText: { fontSize: 15, fontWeight: 'bold' },
+  buttonText: { fontSize: 15, fontWeight: '600' },
+  disabled: { opacity: 0.55 },
+  pressed: { opacity: 0.85 },
+  deleteButton: { marginTop: 14, height: 44, flexDirection: 'row', gap: 6, justifyContent: 'center', alignItems: 'center' },
+  deleteButtonText: { fontSize: 15, fontWeight: '600' },
 });

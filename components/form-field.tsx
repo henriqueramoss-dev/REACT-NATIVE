@@ -25,7 +25,7 @@ export default function FormField({ field, value, error, onChange }: Props) {
     styles.input,
     {
       backgroundColor: colors.surface,
-      borderColor: error ? colors.danger : colors.borderStrong,
+      borderColor: error ? colors.danger : colors.border,
       color: colors.text,
     },
   ];
@@ -43,13 +43,13 @@ export default function FormField({ field, value, error, onChange }: Props) {
                 onPress={() => onChange(option.value)}
                 style={[
                   styles.chip,
-                  { borderColor: active ? colors.gold : colors.borderStrong },
-                  active && { backgroundColor: colors.gold },
+                  { backgroundColor: active ? colors.primary : colors.surface },
+                  { borderColor: active ? colors.primary : colors.border },
                 ]}
                 accessibilityRole="radio"
                 accessibilityState={{ checked: active }}
               >
-                <Text style={[styles.chipText, { color: active ? '#242629' : colors.text }]}>{option.label}</Text>
+                <Text style={[styles.chipText, { color: active ? colors.onPrimary : colors.text }]}>{option.label}</Text>
               </Pressable>
             );
           })}
@@ -57,14 +57,24 @@ export default function FormField({ field, value, error, onChange }: Props) {
       );
       break;
 
-    case 'relation':
     case 'relations':
+      // Igual ao site: uma caixa de seleção para cada opção.
+      input = (
+        <CheckList
+          field={field}
+          selected={Array.isArray(value) ? value : []}
+          onChange={onChange}
+        />
+      );
+      break;
+
+    case 'relation':
       input = (
         <RelationInput
           field={field}
           selected={Array.isArray(value) ? value : text ? [text] : []}
           hasError={!!error}
-          onChange={(values) => onChange(field.type === 'relations' ? values : values[0] ?? '')}
+          onChange={(values) => onChange(values[0] ?? '')}
         />
       );
       break;
@@ -107,7 +117,7 @@ export default function FormField({ field, value, error, onChange }: Props) {
 
   return (
     <View style={styles.field}>
-      <Text style={[styles.label, { color: colors.textSecondary }]}>
+      <Text style={[styles.label, { color: colors.text }]}>
         {field.label}
         {field.required && <Text style={{ color: colors.danger }}> *</Text>}
       </Text>
@@ -123,7 +133,7 @@ function RelationInput({
   hasError,
   onChange,
 }: {
-  field: Extract<Field, { type: 'relation' | 'relations' }>;
+  field: Extract<Field, { type: 'relation' }>;
   selected: string[];
   hasError: boolean;
   onChange: (values: string[]) => void;
@@ -132,7 +142,6 @@ function RelationInput({
   const { options, loaded, error, reload } = useOptions(field.resource);
   const [open, setOpen] = useState(false);
   const target = RESOURCES[field.resource];
-  const multiple = field.type === 'relations';
 
   const labels = selected.map((v) => options.find((o) => o.value === v)?.label ?? `#${v}`);
   const summary = !loaded && selected.length ? 'Carregando…' : labels.join(', ');
@@ -149,7 +158,7 @@ function RelationInput({
         style={[
           styles.input,
           styles.select,
-          { backgroundColor: colors.surface, borderColor: hasError ? colors.danger : colors.borderStrong },
+          { backgroundColor: colors.surface, borderColor: hasError ? colors.danger : colors.border },
         ]}
         accessibilityRole="button"
         accessibilityLabel={`Selecionar ${field.label}`}
@@ -158,7 +167,7 @@ function RelationInput({
           numberOfLines={1}
           style={[styles.selectText, { color: summary ? colors.text : colors.placeholder }]}
         >
-          {summary || (multiple ? 'Selecione um ou mais' : 'Selecione…')}
+          {summary || 'Selecione…'}
         </Text>
         <Ionicons name="chevron-down" size={18} color={colors.textMuted} />
       </Pressable>
@@ -168,7 +177,6 @@ function RelationInput({
         title={field.label}
         options={options}
         selected={selected}
-        multiple={multiple}
         error={error}
         emptyText={`Nenhum registro em ${target.label.toLowerCase()}.`}
         onCreate={() => {
@@ -182,16 +190,74 @@ function RelationInput({
   );
 }
 
+function CheckList({
+  field,
+  selected,
+  onChange,
+}: {
+  field: Extract<Field, { type: 'relations' }>;
+  selected: string[];
+  onChange: (values: string[]) => void;
+}) {
+  const { colors } = useAppTheme();
+  const { options, loaded, error } = useOptions(field.resource);
+  const target = RESOURCES[field.resource];
+
+  if (error) return <Text style={[styles.error, { color: colors.danger }]}>{error}</Text>;
+  if (!loaded) return <Text style={[styles.hint, { color: colors.textMuted }]}>Carregando…</Text>;
+  if (options.length === 0) {
+    return (
+      <Pressable onPress={() => router.push({ pathname: '/formulario', params: { recurso: target.key } })}>
+        <Text style={[styles.hint, { color: colors.textMuted }]}>
+          Nenhum registro em {target.label.toLowerCase()}.{' '}
+          <Text style={{ color: colors.primary, fontWeight: '600' }}>Cadastrar agora</Text>
+        </Text>
+      </Pressable>
+    );
+  }
+
+  return (
+    <View style={styles.chips}>
+      {options.map((option) => {
+        const on = selected.includes(option.value);
+        return (
+          <Pressable
+            key={option.value}
+            onPress={() => onChange(on ? selected.filter((v) => v !== option.value) : [...selected, option.value])}
+            style={[
+              styles.check,
+              { borderColor: on ? colors.primary : colors.border },
+              { backgroundColor: on ? colors.primarySoft : colors.surface },
+            ]}
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: on }}
+          >
+            <Ionicons
+              name={on ? 'checkbox' : 'square-outline'}
+              size={18}
+              color={on ? colors.primary : colors.textMuted}
+            />
+            <Text style={[styles.checkText, { color: colors.text }]}>{option.label}</Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  field: { gap: 8 },
-  label: { fontSize: 13, fontWeight: 'bold' },
-  input: { minHeight: 50, borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, fontSize: 15 },
-  inputWithIcon: { paddingRight: 42 },
-  inputIcon: { position: 'absolute', right: 14, top: 16 },
+  field: { gap: 6 },
+  label: { fontSize: 14, fontWeight: '600' },
+  input: { minHeight: 44, borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, fontSize: 15 },
+  inputWithIcon: { paddingRight: 40 },
+  inputIcon: { position: 'absolute', right: 12, top: 13 },
   select: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   selectText: { flex: 1, fontSize: 15 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 999, borderWidth: 1 },
-  chipText: { fontSize: 14, fontWeight: 'bold' },
-  error: { fontSize: 12 },
+  chip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 999, borderWidth: 1 },
+  chipText: { fontSize: 14, fontWeight: '500' },
+  check: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderRadius: 8 },
+  checkText: { fontSize: 14, fontWeight: '500' },
+  hint: { fontSize: 14 },
+  error: { fontSize: 13 },
 });

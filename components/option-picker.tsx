@@ -72,7 +72,7 @@ export default function OptionPicker({
         </View>
 
         {options.length > 6 && (
-          <View style={[styles.search, { borderColor: colors.borderStrong, backgroundColor: colors.background }]}>
+          <View style={[styles.search, { borderColor: colors.border, backgroundColor: colors.surface }]}>
             <Ionicons name="search" size={18} color={colors.placeholder} />
             <TextInput
               value={search}
@@ -97,8 +97,8 @@ export default function OptionPicker({
                 {term ? 'Nenhum resultado para a pesquisa.' : emptyText}
               </Text>
               {!term && onCreate && (
-                <Pressable onPress={onCreate} style={styles.createButton}>
-                  <Text style={styles.createButtonText}>Cadastrar agora</Text>
+                <Pressable onPress={onCreate} style={[styles.createButton, { backgroundColor: colors.primary }]}>
+                  <Text style={[styles.createButtonText, { color: colors.onPrimary }]}>Cadastrar agora</Text>
                 </Pressable>
               )}
             </View>
@@ -116,7 +116,7 @@ export default function OptionPicker({
                 <Ionicons
                   name={isSelected ? 'checkmark-circle' : 'ellipse-outline'}
                   size={22}
-                  color={isSelected ? colors.gold : colors.borderStrong}
+                  color={isSelected ? colors.primary : colors.borderStrong}
                 />
               </Pressable>
             );
@@ -124,8 +124,8 @@ export default function OptionPicker({
         />
 
         {multiple && (
-          <Pressable onPress={close} style={styles.doneButton}>
-            <Text style={styles.doneButtonText}>
+          <Pressable onPress={close} style={[styles.doneButton, { backgroundColor: colors.primary }]}>
+            <Text style={[styles.doneButtonText, { color: colors.onPrimary }]}>
               Concluir{selected.length ? ` (${selected.length})` : ''}
             </Text>
           </Pressable>
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     gap: 8,
     height: 44,
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: 8,
     paddingHorizontal: 12,
     marginBottom: 8,
   },
@@ -170,15 +170,14 @@ const styles = StyleSheet.create({
   optionText: { flex: 1, fontSize: 15 },
   empty: { paddingVertical: 24, alignItems: 'center', gap: 14 },
   message: { fontSize: 14, textAlign: 'center' },
-  createButton: { paddingHorizontal: 18, paddingVertical: 10, borderRadius: 10, backgroundColor: '#C49A3A' },
-  createButtonText: { color: '#242629', fontWeight: 'bold' },
+  createButton: { paddingHorizontal: 18, paddingVertical: 10, borderRadius: 8 },
+  createButtonText: { fontWeight: '600' },
   doneButton: {
     marginTop: 14,
-    height: 50,
-    borderRadius: 10,
+    height: 46,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#C49A3A',
   },
-  doneButtonText: { color: '#242629', fontSize: 15, fontWeight: 'bold' },
+  doneButtonText: { fontSize: 15, fontWeight: '600' },
 });
