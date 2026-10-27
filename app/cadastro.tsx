@@ -4,8 +4,8 @@ import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
 import BrandMark from '@/components/brand-mark';
 import { useAppTheme } from '@/contexts/theme-context';
-import { create } from '@/services/biblioteca-api';
-import { isValidIsoDate, type Usuario } from '@/services/resources';
+import { ApiError, create } from '@/services/biblioteca-api';
+import { isValidIsoDate, TIPO_USUARIO_OPTIONS, type Usuario } from '@/services/resources';
 import styles from '@/styles/auth.styles';
 import { brToIso, maskDate } from '@/utils/dates';
 import { avisar } from '@/utils/dialogs';
@@ -16,14 +16,35 @@ export default function SignUpScreen() {
 
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
+  const [cpf, setCpf] = useState('');
+  const [tipo, setTipo] = useState('ALUNO');
   const [telefone, setTelefone] = useState('');
   const [endereco, setEndereco] = useState('');
+  const [cidade, setCidade] = useState('');
+  const [estado, setEstado] = useState('');
+  const [cep, setCep] = useState('');
   const [dataNascimento, setDataNascimento] = useState('');
   const [loading, setLoading] = useState(false);
 
   async function handleSignUp() {
-    if (!nome.trim() || !email.trim() || !telefone.trim() || !endereco.trim() || !dataNascimento.trim()) {
+    const campos = [nome, email, cpf, telefone, endereco, cidade, estado, cep, dataNascimento];
+    if (campos.some((campo) => !campo.trim())) {
       avisar('Campos incompletos', 'Preencha todos os campos.');
+      return;
+    }
+
+    if (!/^\d{11}$/.test(cpf)) {
+      avisar('CPF inválido', 'Informe os 11 dígitos do CPF, sem pontos ou traço.');
+      return;
+    }
+
+    if (!/^[A-Z]{2}$/.test(estado)) {
+      avisar('Estado inválido', 'Informe a sigla do estado com 2 letras (ex.: SP).');
+      return;
+    }
+
+    if (!/^\d{8}$/.test(cep)) {
+      avisar('CEP inválido', 'Informe os 8 dígitos do CEP, sem traço.');
       return;
     }
 
@@ -37,11 +58,15 @@ export default function SignUpScreen() {
 
     let usuario: Usuario;
     try {
-      usuario = await create<Usuario>('usuarios', { nome: nome.trim(), email: email.trim().toLowerCase() });
+      usuario = await create<Usuario>('usuarios', {
+        nome: nome.trim(),
+        email: email.trim().toLowerCase(),
+        cpf,
+        tipo,
+      });
     } catch (error) {
       setLoading(false);
-      const message = error instanceof Error ? error.message : 'Não foi possível realizar o cadastro.';
-      avisar('Erro no cadastro', message);
+      avisar('Erro no cadastro', describeError(error, 'Não foi possível realizar o cadastro.'));
       return;
     }
 
@@ -50,12 +75,15 @@ export default function SignUpScreen() {
         usuarioId: usuario.id,
         telefone: telefone.trim(),
         endereco: endereco.trim(),
+        cidade: cidade.trim(),
+        estado,
+        cep,
         dataNascimento: nascimentoIso,
       });
 
       avisar('Cadastro realizado', 'Usuário e perfil foram cadastrados na API.', () => router.replace('/painel'));
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Erro desconhecido.';
+      const message = describeError(error, 'Erro desconhecido.');
       avisar(
         'Perfil não cadastrado',
         `O usuário foi criado, mas o perfil não pôde ser salvo (${message}). Complete-o pela tela Perfis.`,
@@ -77,14 +105,42 @@ export default function SignUpScreen() {
 
         <Text style={[styles.title, { color: colors.text }]}>Criar conta</Text>
         <Text style={[styles.description, { color: colors.textMuted }]}>
-          Os campos seguem a estrutura atual da sua API Java.
+          Cadastre-se como leitor da biblioteca.
         </Text>
 
         <View style={styles.form}>
           <TextInput value={nome} onChangeText={setNome} placeholder="Nome completo" placeholderTextColor={colors.placeholder} style={[styles.input, inputColors]} />
           <TextInput value={email} onChangeText={setEmail} placeholder="E-mail" placeholderTextColor={colors.placeholder} keyboardType="email-address" autoCapitalize="none" style={[styles.input, inputColors]} />
+          <TextInput value={cpf} onChangeText={(text) => setCpf(text.replace(/\D/g, '').slice(0, 11))} placeholder="CPF (somente números)" placeholderTextColor={colors.placeholder} keyboardType="number-pad" style={[styles.input, inputColors]} />
+
+          <View style={styles.chips}>
+            {TIPO_USUARIO_OPTIONS.map((option) => {
+              const active = tipo === option.value;
+              return (
+                <Pressable
+                  key={option.value}
+                  onPress={() => setTipo(option.value)}
+                  style={[
+                    styles.chip,
+                    { backgroundColor: active ? colors.primary : colors.surface },
+                    { borderColor: active ? colors.primary : colors.border },
+                  ]}
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: active }}
+                >
+                  <Text style={[styles.chipText, { color: active ? colors.onPrimary : colors.text }]}>{option.label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+
           <TextInput value={telefone} onChangeText={setTelefone} placeholder="Telefone" placeholderTextColor={colors.placeholder} keyboardType="phone-pad" style={[styles.input, inputColors]} />
           <TextInput value={endereco} onChangeText={setEndereco} placeholder="Endereço" placeholderTextColor={colors.placeholder} style={[styles.input, inputColors]} />
+          <TextInput value={cidade} onChangeText={setCidade} placeholder="Cidade" placeholderTextColor={colors.placeholder} style={[styles.input, inputColors]} />
+          <View style={styles.row}>
+            <TextInput value={estado} onChangeText={(text) => setEstado(text.replace(/[^A-Za-z]/g, '').toUpperCase())} placeholder="UF" placeholderTextColor={colors.placeholder} autoCapitalize="characters" maxLength={2} style={[styles.input, inputColors, styles.uf]} />
+            <TextInput value={cep} onChangeText={(text) => setCep(text.replace(/\D/g, '').slice(0, 8))} placeholder="CEP (somente números)" placeholderTextColor={colors.placeholder} keyboardType="number-pad" style={[styles.input, inputColors, styles.grow]} />
+          </View>
           <TextInput
             value={dataNascimento}
             onChangeText={(text) => setDataNascimento(maskDate(text))}
@@ -108,9 +164,17 @@ export default function SignUpScreen() {
         </Text>
 
         <Text style={[styles.notice, { color: colors.placeholder }]}>
-          A API atual não possui CPF nem senha no modelo de usuário; por isso esses campos não são enviados.
+          A API atual não possui senha no modelo de usuário; por isso o cadastro ainda não cria uma senha de acesso.
         </Text>
       </ScrollView>
     </View>
   );
+}
+
+/** Usa a mensagem do primeiro campo recusado pela API, quando houver. */
+function describeError(error: unknown, fallback: string) {
+  if (!(error instanceof Error)) return fallback;
+  const campos = (error as ApiError).campos;
+  const primeiro = campos && Object.values(campos)[0];
+  return primeiro || error.message;
 }

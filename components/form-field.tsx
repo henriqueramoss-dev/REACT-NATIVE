@@ -99,6 +99,35 @@ export default function FormField({ field, value, error, onChange }: Props) {
       );
       break;
 
+    case 'digits':
+      input = (
+        <TextInput
+          value={text}
+          // Aceita colar com pontos e traço: limpa primeiro, depois corta no tamanho.
+          onChangeText={(typed) => onChange(typed.replace(/\D/g, '').slice(0, field.length))}
+          placeholder={field.placeholder}
+          placeholderTextColor={colors.placeholder}
+          keyboardType="number-pad"
+          style={inputStyle}
+        />
+      );
+      break;
+
+    case 'uf':
+      input = (
+        <TextInput
+          value={text}
+          onChangeText={(typed) => onChange(typed.replace(/[^A-Za-z]/g, '').toUpperCase())}
+          placeholder={field.placeholder}
+          placeholderTextColor={colors.placeholder}
+          maxLength={2}
+          autoCapitalize="characters"
+          autoCorrect={false}
+          style={inputStyle}
+        />
+      );
+      break;
+
     default:
       input = (
         <TextInput

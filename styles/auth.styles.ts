@@ -8,6 +8,12 @@ const styles = StyleSheet.create({
   title: { fontSize: 30, fontWeight: 'bold' },
   description: { marginTop: 8, fontSize: 15, lineHeight: 22 },
   form: { marginTop: 25, gap: 14 },
+  row: { flexDirection: 'row', gap: 10 },
+  uf: { width: 72 },
+  grow: { flex: 1 },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  chip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 999, borderWidth: 1 },
+  chipText: { fontSize: 14, fontWeight: '500' },
   label: { marginBottom: 6, fontSize: 13, fontWeight: 'bold' },
   input: {
     height: 44,
