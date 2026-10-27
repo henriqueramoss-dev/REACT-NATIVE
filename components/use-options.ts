@@ -14,7 +14,7 @@ export function useOptions(key: ResourceKey | undefined) {
     const resource = RESOURCES[key];
 
     try {
-      const page = await list<any>(resource.key, resource.embeddedKey, { size: 200 });
+      const page = await list<any>(resource.key, resource.embeddedKey, { size: 100 } /* máximo da API por página */);
       setOptions(page.items.map((item) => ({ value: String(item.id), label: resource.title(item) })));
       setError(undefined);
     } catch (e) {

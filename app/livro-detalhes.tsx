@@ -28,15 +28,13 @@ export default function LivroDetalhesScreen() {
           setLivro(data);
           setError(undefined);
 
-          // A API não filtra empréstimos por livro; buscamos os mais recentes e filtramos aqui.
+          // Histórico de empréstimos do livro (GET /livros/{id}/emprestimos), do mais recente ao mais antigo.
           try {
-            const emprestimos = await list<Emprestimo>('emprestimos', RESOURCES.emprestimos.embeddedKey, {
-              size: 200,
+            const emprestimos = await list<Emprestimo>(`livros/${data.id}/emprestimos`, RESOURCES.emprestimos.embeddedKey, {
+              size: 100,
               sort: 'id,desc',
             });
-            setEmprestimoAtual(
-              emprestimos.items.find((e) => e.livro?.id === data.id && e.status !== 'DEVOLVIDO'),
-            );
+            setEmprestimoAtual(emprestimos.items.find((e) => e.status !== 'DEVOLVIDO'));
             setSituacaoErro(false);
           } catch {
             setSituacaoErro(true);
