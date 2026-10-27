@@ -70,6 +70,12 @@ const styles = StyleSheet.create({
   detailLabel: { marginTop: 18, fontSize: 12, fontWeight: 'bold' },
   detailValue: { marginTop: 4, fontSize: 15, lineHeight: 21 },
   empty: { marginTop: 30, textAlign: 'center', fontSize: 14 },
+  cardCount: { fontSize: 15, fontWeight: 'bold', marginRight: 10 },
+  statusRow: { flexDirection: 'row', gap: 10, marginTop: 22 },
+  statusCard: { flex: 1, borderWidth: 1, borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
+  statusValue: { fontSize: 26, fontWeight: 'bold' },
+  statusLabel: { marginTop: 2, fontSize: 12, fontWeight: 'bold' },
+  apiInfo: { marginTop: 24, textAlign: 'center', fontSize: 11 },
 });
 
 export default styles;

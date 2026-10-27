@@ -1,137 +1,128 @@
-const API_URL = process.env.EXPO_PUBLIC_API_URL;
+import Constants from 'expo-constants';
 
-export type Usuario = {
-  id: number;
-  nome: string;
-  email: string;
+// Cliente HTTP da Biblioteca API (Spring Boot + HATEOAS).
+
+export type Id = number;
+
+export type Page<T> = {
+  items: T[];
+  number: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
 };
 
-export type Perfil = {
-  id: number;
-  telefone: string;
-  endereco: string;
-  dataNascimento: string;
-  usuario?: Usuario;
+/** Erro retornado pelo ApiExceptionHandler da API. */
+export class ApiError extends Error {
+  status: number;
+  campos: Record<string, string>;
+
+  constructor(status: number, mensagem: string, campos: Record<string, string> = {}) {
+    super(mensagem);
+    this.status = status;
+    this.campos = campos;
+  }
+}
+
+/**
+ * Ordem de prioridade:
+ * 1. EXPO_PUBLIC_API_URL (arquivo .env)
+ * 2. IP do computador que está rodando o Expo, na porta 8080 (funciona no celular físico)
+ * 3. http://localhost:8080
+ */
+function resolveBaseUrl() {
+  const fromEnv = process.env.EXPO_PUBLIC_API_URL;
+  if (fromEnv) return fromEnv.replace(/\/+$/, '');
+
+  const host = Constants.expoConfig?.hostUri?.split(':')[0];
+  if (host && host !== 'localhost' && host !== '127.0.0.1') return `http://${host}:8080`;
+
+  return 'http://localhost:8080';
+}
+
+const baseUrl = resolveBaseUrl();
+
+export function getBaseUrl() {
+  return baseUrl;
+}
+
+const DEFAULT_MESSAGES: Record<number, string> = {
+  400: 'Dados inválidos. Verifique os campos informados.',
+  404: 'Registro não encontrado.',
+  409: 'Operação não permitida: dado duplicado ou registro em uso.',
 };
 
-export type AutorApi = {
-  id: number;
-  nome: string;
-};
-
-export type CategoriaApi = {
-  id: number;
-  nome: string;
-};
-
-export type LivroApi = {
-  id: number;
-  titulo: string;
-  isbn: string;
-  anoPublicacao: number;
-  categoria: CategoriaApi;
-  autores: AutorApi[];
-};
-
-export type EmprestimoApi = {
-  id: number;
-  dataEmprestimo: string;
-  dataPrevistaDevolucao: string;
-  status: string;
-  usuario: Usuario;
-  livro: LivroApi;
-};
-
-function getApiUrl() {
-  if (!API_URL) {
-    throw new Error('EXPO_PUBLIC_API_URL não configurada.');
+async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+  let res: Response;
+  try {
+    res = await fetch(baseUrl + path, {
+      ...init,
+      headers: { 'Content-Type': 'application/json', Accept: 'application/hal+json', ...init.headers },
+    });
+  } catch {
+    throw new ApiError(0, `Não foi possível conectar à API em ${baseUrl}. Ela está rodando?`);
   }
 
-  return API_URL.replace(/\/$/, '');
-}
+  if (res.status === 204) return undefined as T;
 
-function getEmbeddedItems<T>(data: any): T[] {
-  if (!data?._embedded) {
-    return [];
+  const text = await res.text();
+  let body: any;
+  try {
+    body = text ? JSON.parse(text) : undefined;
+  } catch {
+    body = undefined;
   }
 
-  const firstList = Object.values(data._embedded)[0];
-  return Array.isArray(firstList) ? (firstList as T[]) : [];
-}
-
-async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(`${getApiUrl()}${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
-  });
-
-  if (!response.ok) {
-    let message = 'Erro ao acessar a API.';
-
-    try {
-      const body = await response.json();
-      message = body?.message || body?.detail || message;
-    } catch {
-      // Mantém a mensagem padrão.
-    }
-
-    throw new Error(message);
+  if (!res.ok) {
+    const mensagem = body?.mensagem ?? DEFAULT_MESSAGES[res.status] ?? `Erro ${res.status} ao chamar a API.`;
+    throw new ApiError(res.status, mensagem, body?.campos ?? {});
   }
-
-  if (response.status === 204) {
-    return undefined as T;
-  }
-
-  return response.json();
+  return body as T;
 }
 
-export async function listarLivros() {
-  const data = await request<any>('/livros?size=50');
-  return getEmbeddedItems<LivroApi>(data);
+// Remove os _links do HATEOAS para trabalhar só com os dados.
+function strip<T>(item: any): T {
+  const { _links, ...rest } = item ?? {};
+  return rest as T;
 }
 
-export async function buscarLivroPorId(id: number) {
-  return request<LivroApi>(`/livros/${id}`);
+export type ListParams = {
+  page?: number;
+  size?: number;
+  /** Ex.: 'id,desc'. Padrão: 'id'. */
+  sort?: string;
+  /** Parâmetro do endpoint /buscar (ex.: { titulo: 'Dom' }). */
+  search?: Record<string, string>;
+};
+
+export async function list<T>(resource: string, embeddedKey: string, params: ListParams = {}): Promise<Page<T>> {
+  const qs = new URLSearchParams({ page: String(params.page ?? 0), size: String(params.size ?? 10), sort: params.sort ?? 'id' });
+  const search = Object.entries(params.search ?? {}).filter(([, v]) => v.trim() !== '');
+  search.forEach(([k, v]) => qs.set(k, v.trim()));
+
+  const path = search.length ? `/${resource}/buscar` : `/${resource}`;
+  const body = await request<any>(`${path}?${qs}`);
+  return {
+    items: (body?._embedded?.[embeddedKey] ?? []).map(strip<T>),
+    number: body?.page?.number ?? 0,
+    size: body?.page?.size ?? 0,
+    totalElements: body?.page?.totalElements ?? 0,
+    totalPages: body?.page?.totalPages ?? 0,
+  };
 }
 
-export async function listarAutores() {
-  const data = await request<any>('/autores?size=50');
-  return getEmbeddedItems<AutorApi>(data);
+export async function get<T>(resource: string, id: Id): Promise<T> {
+  return strip<T>(await request(`/${resource}/${id}`));
 }
 
-export async function listarCategorias() {
-  const data = await request<any>('/categorias?size=50');
-  return getEmbeddedItems<CategoriaApi>(data);
+export async function create<T>(resource: string, data: unknown): Promise<T> {
+  return strip<T>(await request(`/${resource}`, { method: 'POST', body: JSON.stringify(data) }));
 }
 
-export async function listarEmprestimos() {
-  const data = await request<any>('/emprestimos?size=50');
-  return getEmbeddedItems<EmprestimoApi>(data);
+export async function update<T>(resource: string, id: Id, data: unknown): Promise<T> {
+  return strip<T>(await request(`/${resource}/${id}`, { method: 'PUT', body: JSON.stringify(data) }));
 }
 
-export async function criarUsuario(nome: string, email: string) {
-  return request<Usuario>('/usuarios', {
-    method: 'POST',
-    body: JSON.stringify({ nome, email }),
-  });
-}
-
-export async function criarPerfil(
-  usuarioId: number,
-  telefone: string,
-  endereco: string,
-  dataNascimento: string,
-) {
-  return request<Perfil>('/perfis', {
-    method: 'POST',
-    body: JSON.stringify({
-      telefone,
-      endereco,
-      dataNascimento,
-      usuarioId,
-    }),
-  });
+export async function remove(resource: string, id: Id): Promise<void> {
+  await request(`/${resource}/${id}`, { method: 'DELETE' });
 }

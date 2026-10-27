@@ -1,50 +1,61 @@
-# Welcome to your Expo app 👋
+# Biblioteca — app mobile
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplicativo em **React Native + Expo (SDK 54, Expo Router)** que consome a API de biblioteca em Spring Boot do repositório [API-DE-JAVA-](https://github.com/henriqueramoss-dev/API-DE-JAVA-).
 
-## Get started
+## Telas
 
-1. Install dependencies
+| Tela | O que faz |
+|---|---|
+| Início, Entrar e Criar conta | Boas-vindas; o login é demonstrativo (a API ainda não tem autenticação) e o cadastro cria **Usuário + Perfil** na API |
+| Painel | Empréstimos ativos, devolvidos e atrasados, totais de cada cadastro e atalhos |
+| Empréstimos | Lista com filtro por status (`/emprestimos/buscar?status=`) |
+| Livros | Lista com busca por título; ao tocar abre os **detalhes do livro**, com a situação (disponível ou emprestado) e o botão para registrar empréstimo |
+| Autores, Categorias, Usuários e Perfis | Lista com busca, atualização ao puxar a tela e carregamento de mais itens ao rolar |
+| Formulário | Cadastro e edição de qualquer entidade: seleção de livro, usuário, categoria e autores, datas no formato DD/MM/AAAA e erros de validação da API exibidos em cada campo |
+
+Todas as listas permitem excluir registros, com confirmação.
+
+## Como executar
+
+1. Inicie a API (`biblioteca-api` no repositório API-DE-JAVA-). Ela deve responder em `http://localhost:8080`.
+2. Instale as dependências e inicie o app:
 
    ```bash
    npm install
-   ```
-
-2. Start the app
-
-   ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+3. Abra no Expo Go (versão compatível com o SDK 54), no emulador Android/iOS ou no navegador (tecla `w`).
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### Endereço da API
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+Por padrão, o app procura a API no mesmo computador que está rodando o Expo, na porta 8080. Isso funciona no Expo Go do celular quando ele e o computador estão na mesma rede Wi-Fi.
 
-## Get a fresh project
-
-When you're ready, run:
+Para usar outro endereço, crie um arquivo `.env` na raiz do projeto com a linha abaixo (trocando pelo IP do seu computador) e reinicie o Expo:
 
 ```bash
-npm run reset-project
+EXPO_PUBLIC_API_URL=http://192.168.0.10:8080
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Estrutura
 
-## Learn more
+```text
+app/                      telas (Expo Router: cada arquivo é uma rota)
+  formulario.tsx          cadastro/edição genérico (?recurso=livros&id=1)
+  livro-detalhes.tsx      detalhes do livro e situação de empréstimo
+  livros.tsx, autores.tsx ...  listagens
+components/               lista, campos de formulário e seletor de opções
+services/
+  biblioteca-api.ts       cliente HTTP (paginação HATEOAS e erros da API)
+  resources.ts            campos, busca e exibição de cada entidade
+contexts/theme-context.tsx  tema claro/escuro
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+Para incluir um novo campo ou entidade, basta descrevê-lo em `services/resources.ts`: as telas de lista e de formulário são montadas a partir dessa descrição.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Scripts
 
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+npm run lint      # ESLint (expo lint)
+npx tsc --noEmit  # verificação de tipos
+```

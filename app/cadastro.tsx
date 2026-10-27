@@ -1,11 +1,14 @@
 import { Link, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
-import { Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
 import { useAppTheme } from '@/contexts/theme-context';
-import { criarPerfil, criarUsuario } from '@/services/biblioteca-api';
+import { create } from '@/services/biblioteca-api';
+import { isValidIsoDate, type Usuario } from '@/services/resources';
 import styles from '@/styles/auth.styles';
+import { brToIso, maskDate } from '@/utils/dates';
+import { avisar } from '@/utils/dialogs';
 
 export default function SignUpScreen() {
   const { colors, resolvedMode } = useAppTheme();
@@ -19,30 +22,44 @@ export default function SignUpScreen() {
 
   async function handleSignUp() {
     if (!nome.trim() || !email.trim() || !telefone.trim() || !endereco.trim() || !dataNascimento.trim()) {
-      Alert.alert('Campos incompletos', 'Preencha todos os campos.');
+      avisar('Campos incompletos', 'Preencha todos os campos.');
+      return;
+    }
+
+    const nascimentoIso = brToIso(dataNascimento);
+    if (!nascimentoIso || !isValidIsoDate(nascimentoIso)) {
+      avisar('Data inválida', 'Informe a data de nascimento no formato DD/MM/AAAA.');
+      return;
+    }
+
+    setLoading(true);
+
+    let usuario: Usuario;
+    try {
+      usuario = await create<Usuario>('usuarios', { nome: nome.trim(), email: email.trim().toLowerCase() });
+    } catch (error) {
+      setLoading(false);
+      const message = error instanceof Error ? error.message : 'Não foi possível realizar o cadastro.';
+      avisar('Erro no cadastro', message);
       return;
     }
 
     try {
-      setLoading(true);
+      await create('perfis', {
+        usuarioId: usuario.id,
+        telefone: telefone.trim(),
+        endereco: endereco.trim(),
+        dataNascimento: nascimentoIso,
+      });
 
-      const usuario = await criarUsuario(nome.trim(), email.trim().toLowerCase());
-
-      await criarPerfil(
-        usuario.id,
-        telefone.trim(),
-        endereco.trim(),
-        dataNascimento.trim(),
-      );
-
-      Alert.alert(
-        'Cadastro realizado',
-        'Usuário e perfil foram cadastrados na API.',
-        [{ text: 'Continuar', onPress: () => router.replace('/painel') }],
-      );
+      avisar('Cadastro realizado', 'Usuário e perfil foram cadastrados na API.', () => router.replace('/painel'));
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Não foi possível realizar o cadastro.';
-      Alert.alert('Erro no cadastro', message);
+      const message = error instanceof Error ? error.message : 'Erro desconhecido.';
+      avisar(
+        'Perfil não cadastrado',
+        `O usuário foi criado, mas o perfil não pôde ser salvo (${message}). Complete-o pela tela Perfis.`,
+        () => router.replace('/painel'),
+      );
     } finally {
       setLoading(false);
     }
@@ -70,9 +87,11 @@ export default function SignUpScreen() {
           <TextInput value={endereco} onChangeText={setEndereco} placeholder="Endereço" placeholderTextColor="#999" style={styles.input} />
           <TextInput
             value={dataNascimento}
-            onChangeText={setDataNascimento}
-            placeholder="Data de nascimento: 2000-05-10"
+            onChangeText={(text) => setDataNascimento(maskDate(text))}
+            placeholder="Data de nascimento (DD/MM/AAAA)"
             placeholderTextColor="#999"
+            keyboardType="number-pad"
+            maxLength={10}
             style={styles.input}
           />
 
