@@ -1,10 +1,11 @@
 import { Link, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
-import { Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
 import { useAppTheme } from '@/contexts/theme-context';
 import styles from '@/styles/auth.styles';
+import { avisar } from '@/utils/dialogs';
 
 export default function LoginScreen() {
   const { colors, resolvedMode } = useAppTheme();
@@ -14,14 +15,14 @@ export default function LoginScreen() {
 
   function handleLogin() {
     if (!email.trim() || !password) {
-      Alert.alert('Campos incompletos', 'Informe seu e-mail e sua senha.');
+      avisar('Campos incompletos', 'Informe seu e-mail e sua senha.');
       return;
     }
 
-    Alert.alert(
+    avisar(
       'Acesso demonstrativo',
       'A API atual ainda não possui autenticação. O aplicativo abrirá o painel para testes.',
-      [{ text: 'Continuar', onPress: () => router.replace('/painel') }],
+      () => router.replace('/painel'),
     );
   }
 

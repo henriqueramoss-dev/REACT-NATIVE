@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "agenda-beauty",
-    "slug": "agenda-beauty",
+    "name": "Biblioteca",
+    "slug": "biblioteca",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "agendabeauty",
+    "scheme": "biblioteca",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -27,14 +27,6 @@
     },
     "plugins": [
       "expo-router",
-      [
-        "expo-image-picker",
-        {
-          "photosPermission": "Permita que o aplicativo acesse suas fotos para escolher uma imagem de perfil.",
-          "cameraPermission": false,
-          "microphonePermission": false
-        }
-      ],
       [
         "expo-splash-screen",
         {

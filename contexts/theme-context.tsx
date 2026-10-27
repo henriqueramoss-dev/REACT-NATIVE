@@ -15,6 +15,11 @@ export const lightColors = {
   borderStrong: '#CED0D4',
   gold: '#C49A3A',
   goldText: '#8A6818',
+  success: '#2E7D32',
+  successSoft: '#E3F1E4',
+  danger: '#B3261E',
+  dangerSoft: '#F9E3E1',
+  neutralSoft: '#E7E8EA',
   overlay: 'rgba(20, 22, 24, 0.62)',
 };
 
@@ -30,6 +35,11 @@ export const darkColors = {
   borderStrong: '#4A4F56',
   gold: '#D0A84B',
   goldText: '#E0BE6A',
+  success: '#7BC77F',
+  successSoft: '#1E3221',
+  danger: '#F2867D',
+  dangerSoft: '#3B2220',
+  neutralSoft: '#30343A',
   overlay: 'rgba(0, 0, 0, 0.76)',
 };
 

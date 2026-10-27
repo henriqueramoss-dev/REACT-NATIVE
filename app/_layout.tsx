@@ -29,14 +29,14 @@ function AppNavigator() {
         <Stack.Screen name="login" options={{ title: 'Entrar' }} />
         <Stack.Screen name="cadastro" options={{ title: 'Cadastro' }} />
         <Stack.Screen name="painel" options={{ title: '' }} />
+        <Stack.Screen name="emprestimos" options={{ title: 'Empréstimos' }} />
         <Stack.Screen name="livros" options={{ title: 'Livros' }} />
         <Stack.Screen name="livro-detalhes" options={{ title: 'Detalhes do livro' }} />
-        <Stack.Screen name="emprestimos" options={{ title: 'Empréstimos' }} />
         <Stack.Screen name="autores" options={{ title: 'Autores' }} />
         <Stack.Screen name="categorias" options={{ title: 'Categorias' }} />
-        <Stack.Screen name="conta" options={{ title: 'Minha conta' }} />
-        <Stack.Screen name="recuperar-senha" options={{ title: 'Recuperar senha' }} />
-        <Stack.Screen name="nova-senha" options={{ title: 'Nova senha' }} />
+        <Stack.Screen name="usuarios" options={{ title: 'Usuários' }} />
+        <Stack.Screen name="perfis" options={{ title: 'Perfis' }} />
+        <Stack.Screen name="formulario" options={{ title: '' }} />
       </Stack>
     </>
   );
