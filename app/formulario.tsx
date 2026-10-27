@@ -35,7 +35,9 @@ export default function FormScreen() {
   const { colors } = useAppTheme();
   const params = useLocalSearchParams<Record<string, string>>();
   const resource = isResourceKey(params.recurso) ? RESOURCES[params.recurso] : undefined;
-  const id = params.id ? Number(params.id) : undefined;
+  const rawId = params.id ? Number(params.id) : undefined;
+  const invalidId = rawId !== undefined && (!Number.isInteger(rawId) || rawId < 1);
+  const id = invalidId ? undefined : rawId;
   const editing = id !== undefined;
 
   const [values, setValues] = useState<FormValues>(() => {
@@ -62,10 +64,12 @@ export default function FormScreen() {
       .finally(() => setLoading(false));
   }, [resource, id]);
 
-  if (!resource) {
+  if (!resource || invalidId) {
     return (
       <View style={[styles.screen, { backgroundColor: colors.background }]}>
-        <Text style={[styles.message, { color: colors.text }]}>Recurso inválido.</Text>
+        <Text style={[styles.message, { color: colors.text }]}>
+          {resource ? 'Registro inválido.' : 'Recurso inválido.'}
+        </Text>
       </View>
     );
   }

@@ -28,12 +28,14 @@ export default function DashboardScreen() {
       ),
     );
 
-    Promise.all([...totals, ...byStatus])
-      .then((entries) => {
-        setCounts(Object.fromEntries(entries));
-        setError(undefined);
-      })
-      .catch((e: Error) => setError(e.message));
+    // allSettled: se uma contagem falhar, as outras continuam aparecendo.
+    Promise.allSettled([...totals, ...byStatus]).then((results) => {
+      const ok = results.flatMap((r) => (r.status === 'fulfilled' ? [r.value] : []));
+      const failed = results.find((r): r is PromiseRejectedResult => r.status === 'rejected');
+
+      setCounts((current) => ({ ...current, ...Object.fromEntries(ok) }));
+      setError(failed ? (failed.reason as Error).message : undefined);
+    });
 
     list<Emprestimo>(emp.key, emp.embeddedKey, { size: 5, sort: 'id,desc' })
       .then((p) => setRecentes(p.items))

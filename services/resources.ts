@@ -2,6 +2,8 @@
 // As telas de listagem e de formulário são montadas a partir daqui.
 // O front-end web (repositório API-DE-JAVA-) usa um arquivo equivalente.
 
+import { isoToBr } from '@/utils/dates';
+
 export type StatusEmprestimo = 'ATIVO' | 'DEVOLVIDO' | 'ATRASADO';
 
 export type TipoUsuario = 'ALUNO' | 'PROFESSOR' | 'FUNCIONARIO' | 'VISITANTE';
@@ -121,9 +123,7 @@ const ids = (v: string | string[] | undefined) => (Array.isArray(v) ? v.map(Numb
 
 /** Converte "2026-10-09" em "09/10/2026". */
 export function formatDate(iso?: string) {
-  if (!iso) return '—';
-  const [y, m, d] = iso.split('-');
-  return d && m && y ? `${d}/${m}/${y}` : iso;
+  return iso ? isoToBr(iso) : '—';
 }
 
 /** Confere formato AAAA-MM-DD e se a data existe (ex.: 31/02 é inválida). */
