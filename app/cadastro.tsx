@@ -5,7 +5,7 @@ import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import BrandMark from '@/components/brand-mark';
 import { useAppTheme } from '@/contexts/theme-context';
 import { ApiError, create } from '@/services/biblioteca-api';
-import { isValidIsoDate, TIPO_USUARIO_OPTIONS, type Usuario } from '@/services/resources';
+import { RESOURCES, TIPO_USUARIO_OPTIONS, validate, type Usuario } from '@/services/resources';
 import styles from '@/styles/auth.styles';
 import { brToIso, maskDate } from '@/utils/dates';
 import { avisar } from '@/utils/dialogs';
@@ -27,30 +27,24 @@ export default function SignUpScreen() {
   const [loading, setLoading] = useState(false);
 
   async function handleSignUp() {
-    const campos = [nome, email, cpf, telefone, endereco, cidade, estado, cep, dataNascimento];
-    if (campos.some((campo) => !campo.trim())) {
-      avisar('Campos incompletos', 'Preencha todos os campos.');
-      return;
-    }
-
-    if (!/^\d{11}$/.test(cpf)) {
-      avisar('CPF inválido', 'Informe os 11 dígitos do CPF, sem pontos ou traço.');
-      return;
-    }
-
-    if (!/^[A-Z]{2}$/.test(estado)) {
-      avisar('Estado inválido', 'Informe a sigla do estado com 2 letras (ex.: SP).');
-      return;
-    }
-
-    if (!/^\d{8}$/.test(cep)) {
-      avisar('CEP inválido', 'Informe os 8 dígitos do CEP, sem traço.');
-      return;
-    }
-
-    const nascimentoIso = brToIso(dataNascimento);
-    if (!nascimentoIso || !isValidIsoDate(nascimentoIso)) {
-      avisar('Data inválida', 'Informe a data de nascimento no formato DD/MM/AAAA.');
+    // As mesmas regras dos formulários de Usuários e Perfis (services/resources.ts).
+    const nascimentoIso = brToIso(dataNascimento) ?? dataNascimento;
+    const erros = {
+      ...validate(RESOURCES.usuarios, { nome, email, cpf, tipo }),
+      // O usuário ainda não existe: um id qualquer só faz o campo "usuário" passar na validação.
+      ...validate(RESOURCES.perfis, {
+        usuarioId: '0',
+        telefone,
+        endereco,
+        cidade,
+        estado,
+        cep,
+        dataNascimento: nascimentoIso,
+      }),
+    };
+    const primeiroErro = Object.values(erros)[0];
+    if (primeiroErro) {
+      avisar('Confira os dados', primeiroErro);
       return;
     }
 

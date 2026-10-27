@@ -120,7 +120,7 @@ export default function ResourceList({ resourceKey }: { resourceKey: ResourceKey
       <View style={styles.toolbar}>
         <View style={styles.pageHeader}>
           <Text style={[styles.count, { color: colors.textMuted }]}>
-            {loading || error ? ' ' : total === 1 ? '1 registro' : `${total} registros`}
+            {loading || (error && items.length === 0) ? ' ' : total === 1 ? '1 registro' : `${total} registros`}
           </Text>
           <Pressable
             onPress={() => router.push({ pathname: '/formulario', params: { recurso: resource.key } })}
@@ -184,7 +184,7 @@ export default function ResourceList({ resourceKey }: { resourceKey: ResourceKey
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => load(0, 'refresh')} />}
         onEndReachedThreshold={0.4}
         onEndReached={() => {
-          if (!loading && !loadingMore && page < totalPages - 1) load(page + 1, 'more');
+          if (!loading && !loadingMore && !error && page < totalPages - 1) load(page + 1, 'more');
         }}
         ListEmptyComponent={
           loading ? (
@@ -205,7 +205,16 @@ export default function ResourceList({ resourceKey }: { resourceKey: ResourceKey
             </View>
           )
         }
-        ListFooterComponent={loadingMore ? <ActivityIndicator style={styles.loader} color={colors.primary} /> : null}
+        ListFooterComponent={
+          loadingMore ? (
+            <ActivityIndicator style={styles.loader} color={colors.primary} />
+          ) : error && items.length > 0 ? (
+            <Pressable onPress={() => load(0, 'refresh')} style={[styles.errorBox, styles.footerError, { backgroundColor: colors.dangerSoft }]}>
+              <Text style={[styles.errorText, { color: colors.danger }]}>{error}</Text>
+              <Text style={[styles.retryText, { color: colors.danger }]}>Tocar para tentar novamente</Text>
+            </Pressable>
+          ) : null
+        }
         renderItem={({ item, index }) => {
           const badge = resource.badge?.(item);
           return (
@@ -311,4 +320,5 @@ const styles = StyleSheet.create({
   errorText: { fontSize: 14, textAlign: 'center' },
   retry: { paddingVertical: 6, paddingHorizontal: 12 },
   retryText: { fontSize: 14, fontWeight: 'bold' },
+  footerError: { margin: 12 },
 });

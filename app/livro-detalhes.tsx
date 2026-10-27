@@ -21,9 +21,15 @@ export default function LivroDetalhesScreen() {
   // Recarrega ao voltar da edição do livro ou do cadastro de empréstimo.
   useFocusEffect(
     useCallback(() => {
-      if (!id) return;
+      const livroId = Number(id);
+      if (!id || !Number.isInteger(livroId) || livroId < 1) {
+        setLivro(undefined);
+        setError('Livro não encontrado.');
+        setLoading(false);
+        return;
+      }
 
-      get<Livro>('livros', Number(id))
+      get<Livro>('livros', livroId)
         .then(async (data) => {
           setLivro(data);
           setError(undefined);
@@ -37,10 +43,17 @@ export default function LivroDetalhesScreen() {
             setEmprestimoAtual(emprestimos.items.find((e) => e.status !== 'DEVOLVIDO'));
             setSituacaoErro(false);
           } catch {
+            // Sem a consulta não dá para saber se o livro está emprestado: descarta o dado antigo.
+            setEmprestimoAtual(undefined);
             setSituacaoErro(true);
           }
         })
-        .catch((e: Error) => setError(e.message))
+        .catch((e: Error) => {
+          // O livro pode ter sido excluído ou a API estar fora: não mostra o registro antigo.
+          setLivro(undefined);
+          setEmprestimoAtual(undefined);
+          setError(e.message);
+        })
         .finally(() => setLoading(false));
     }, [id]),
   );
@@ -115,7 +128,7 @@ export default function LivroDetalhesScreen() {
           )}
         </View>
 
-        {disponivel ? (
+        {situacaoErro ? null : disponivel ? (
           <Pressable
             style={[styles.primaryButton, { backgroundColor: colors.primary }]}
             onPress={() =>
