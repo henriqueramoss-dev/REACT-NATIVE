@@ -111,9 +111,26 @@ export default function ResourceList({ resourceKey }: { resourceKey: ResourceKey
     }
   }
 
+  function editItem(item: any) {
+    router.push({ pathname: '/formulario', params: { recurso: resource.key, id: String(item.id) } });
+  }
+
   return (
     <View style={[styles.screen, { backgroundColor: colors.background }]}>
       <View style={styles.toolbar}>
+        <View style={styles.pageHeader}>
+          <Text style={[styles.count, { color: colors.textMuted }]}>
+            {loading || error ? ' ' : total === 1 ? '1 registro' : `${total} registros`}
+          </Text>
+          <Pressable
+            onPress={() => router.push({ pathname: '/formulario', params: { recurso: resource.key } })}
+            style={({ pressed }) => [styles.primaryButton, { backgroundColor: colors.primary }, pressed && { opacity: 0.85 }]}
+          >
+            <Ionicons name="add" size={18} color={colors.onPrimary} />
+            <Text style={[styles.primaryButtonText, { color: colors.onPrimary }]}>{resource.newLabel}</Text>
+          </Pressable>
+        </View>
+
         {resource.search.options ? (
           <View style={styles.chips}>
             {[{ value: '', label: 'Todos' }, ...resource.search.options].map((option) => {
@@ -124,23 +141,23 @@ export default function ResourceList({ resourceKey }: { resourceKey: ResourceKey
                   onPress={() => setTerm(option.value)}
                   style={[
                     styles.chip,
-                    { borderColor: active ? colors.gold : colors.borderStrong },
-                    active && { backgroundColor: colors.gold },
+                    { backgroundColor: active ? colors.primary : colors.surface },
+                    { borderColor: active ? colors.primary : colors.border },
                   ]}
                 >
-                  <Text style={[styles.chipText, { color: active ? '#242629' : colors.text }]}>{option.label}</Text>
+                  <Text style={[styles.chipText, { color: active ? colors.onPrimary : colors.text }]}>{option.label}</Text>
                 </Pressable>
               );
             })}
           </View>
         ) : (
-          <View style={[styles.search, { backgroundColor: colors.surface, borderColor: colors.borderStrong }]}>
-            <Ionicons name="search" size={18} color={colors.placeholder} />
+          <View style={[styles.search, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <Ionicons name="search" size={17} color={colors.textMuted} />
             <TextInput
               value={draft}
               onChangeText={setDraft}
               placeholder={resource.search.label}
-              placeholderTextColor={colors.placeholder}
+              placeholderTextColor={colors.textMuted}
               returnKeyType="search"
               onSubmitEditing={() => setTerm(draft.trim())}
               style={[styles.searchInput, { color: colors.text }]}
@@ -152,18 +169,17 @@ export default function ResourceList({ resourceKey }: { resourceKey: ResourceKey
             )}
           </View>
         )}
-
-        {!loading && !error && (
-          <Text style={[styles.count, { color: colors.textMuted }]}>
-            {total === 1 ? '1 registro' : `${total} registros`}
-          </Text>
-        )}
       </View>
 
       <FlatList
         data={items}
         keyExtractor={(item) => String(item.id)}
-        contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 100 }]}
+        style={styles.list}
+        contentContainerStyle={[
+          styles.listContent,
+          items.length > 0 && [styles.table, { backgroundColor: colors.surface, borderColor: colors.border }],
+          { marginBottom: insets.bottom + 24 },
+        ]}
         keyboardShouldPersistTaps="handled"
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => load(0, 'refresh')} />}
         onEndReachedThreshold={0.4}
@@ -172,7 +188,7 @@ export default function ResourceList({ resourceKey }: { resourceKey: ResourceKey
         }}
         ListEmptyComponent={
           loading ? (
-            <ActivityIndicator style={styles.loader} color={colors.gold} />
+            <ActivityIndicator style={styles.loader} color={colors.primary} />
           ) : error ? (
             <View style={[styles.errorBox, { backgroundColor: colors.dangerSoft }]}>
               <Ionicons name="alert-circle-outline" size={22} color={colors.danger} />
@@ -182,112 +198,117 @@ export default function ResourceList({ resourceKey }: { resourceKey: ResourceKey
               </Pressable>
             </View>
           ) : (
-            <Text style={[styles.empty, { color: colors.textMuted }]}>
-              {term ? 'Nenhum resultado para a busca.' : resource.emptyLabel}
-            </Text>
+            <View style={[styles.table, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <Text style={[styles.empty, { color: colors.textMuted }]}>
+                {term ? 'Nenhum resultado para a busca.' : resource.emptyLabel}
+              </Text>
+            </View>
           )
         }
-        ListFooterComponent={loadingMore ? <ActivityIndicator style={styles.loader} color={colors.gold} /> : null}
-        renderItem={({ item }) => {
+        ListFooterComponent={loadingMore ? <ActivityIndicator style={styles.loader} color={colors.primary} /> : null}
+        renderItem={({ item, index }) => {
           const badge = resource.badge?.(item);
           return (
             <Pressable
               onPress={() => openItem(item)}
               style={({ pressed }) => [
-                styles.card,
-                { backgroundColor: colors.surface, borderColor: colors.border },
-                pressed && { opacity: 0.85 },
+                styles.row,
+                index > 0 && { borderTopWidth: 1, borderTopColor: colors.border },
+                pressed && { backgroundColor: colors.surfaceMuted },
               ]}
             >
-              <View style={styles.cardBody}>
-                <View style={styles.cardTitleRow}>
-                  <Text style={[styles.cardTitle, { color: colors.text }]} numberOfLines={2}>
-                    {resource.title(item)}
-                  </Text>
-                  {badge && <StatusBadge text={badge.text} tone={badge.tone} />}
-                </View>
-                <Text style={[styles.cardSubtitle, { color: colors.textMuted }]} numberOfLines={1}>
-                  {resource.subtitle(item)}
+              <View style={styles.rowBody}>
+                <Text style={[styles.rowTitle, { color: colors.text }]} numberOfLines={2}>
+                  {resource.title(item)}
                 </Text>
+                {resource.subtitle(item) !== '' && (
+                  <Text style={[styles.rowSubtitle, { color: colors.textMuted }]} numberOfLines={1}>
+                    {resource.subtitle(item)}
+                  </Text>
+                )}
                 {resource.details(item).map((detail) => (
-                  <Text key={detail.label} style={[styles.cardDetail, { color: colors.textMuted }]}>
-                    <Text style={{ fontWeight: 'bold' }}>{detail.label}: </Text>
+                  <Text key={detail.label} style={[styles.rowDetail, { color: colors.text }]}>
+                    <Text style={{ color: colors.textMuted }}>{detail.label}: </Text>
                     {detail.value}
                   </Text>
                 ))}
+                {badge && (
+                  <View style={styles.badgeRow}>
+                    <StatusBadge text={badge.text} tone={badge.tone} />
+                  </View>
+                )}
               </View>
 
-              <Pressable
-                onPress={() => deleteItem(item)}
-                hitSlop={10}
-                style={styles.deleteButton}
-                accessibilityLabel={`Excluir ${resource.title(item)}`}
-              >
-                <Ionicons name="trash-outline" size={20} color={colors.danger} />
-              </Pressable>
+              <View style={styles.actions}>
+                <Pressable
+                  onPress={() => editItem(item)}
+                  hitSlop={6}
+                  style={({ pressed }) => [styles.iconButton, pressed && { backgroundColor: colors.surfaceMuted }]}
+                  accessibilityLabel={`Editar ${resource.title(item)}`}
+                >
+                  <Ionicons name="pencil-outline" size={18} color={colors.textMuted} />
+                </Pressable>
+                <Pressable
+                  onPress={() => deleteItem(item)}
+                  hitSlop={6}
+                  style={({ pressed }) => [styles.iconButton, pressed && { backgroundColor: colors.dangerSoft }]}
+                  accessibilityLabel={`Excluir ${resource.title(item)}`}
+                >
+                  <Ionicons name="trash-outline" size={18} color={colors.textMuted} />
+                </Pressable>
+              </View>
             </Pressable>
           );
         }}
       />
-
-      <Pressable
-        onPress={() => router.push({ pathname: '/formulario', params: { recurso: resource.key } })}
-        style={[styles.fab, { bottom: insets.bottom + 24 }]}
-        accessibilityLabel={resource.newLabel}
-      >
-        <Ionicons name="add" size={22} color="#242629" />
-        <Text style={styles.fabText}>{resource.newLabel}</Text>
-      </Pressable>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  toolbar: { paddingHorizontal: 20, paddingTop: 12, gap: 10 },
+  toolbar: { paddingHorizontal: 16, paddingTop: 16, gap: 12 },
+  pageHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  count: { fontSize: 14 },
+  primaryButton: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 16, height: 42, borderRadius: 8 },
+  primaryButtonText: { fontSize: 15, fontWeight: '600' },
   search: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    height: 48,
+    height: 44,
     borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 14,
+    borderRadius: 8,
+    paddingHorizontal: 12,
   },
   searchInput: { flex: 1, fontSize: 15 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, borderWidth: 1 },
-  chipText: { fontSize: 13, fontWeight: 'bold' },
-  count: { fontSize: 13 },
-  listContent: { padding: 20, paddingTop: 10, gap: 12 },
-  card: { flexDirection: 'row', alignItems: 'flex-start', borderWidth: 1, borderRadius: 12, padding: 16, gap: 12 },
-  cardBody: { flex: 1, gap: 4 },
-  cardTitleRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 },
-  cardTitle: { flex: 1, fontSize: 17, fontWeight: 'bold' },
-  cardSubtitle: { fontSize: 14 },
-  cardDetail: { fontSize: 13 },
-  deleteButton: { padding: 4 },
-  loader: { marginTop: 40 },
-  empty: { marginTop: 40, textAlign: 'center', fontSize: 14 },
-  errorBox: { marginTop: 20, padding: 16, borderRadius: 12, alignItems: 'center', gap: 8 },
+  chip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 999, borderWidth: 1 },
+  chipText: { fontSize: 14, fontWeight: '500' },
+  list: { marginTop: 16 },
+  listContent: { marginHorizontal: 16, flexGrow: 0 },
+  table: {
+    borderWidth: 1,
+    borderRadius: 10,
+    overflow: 'hidden',
+    shadowColor: '#141E32',
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
+  },
+  row: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, paddingVertical: 12, paddingLeft: 16, paddingRight: 8 },
+  rowBody: { flex: 1, gap: 3 },
+  rowTitle: { fontSize: 15, fontWeight: '600' },
+  rowSubtitle: { fontSize: 13 },
+  rowDetail: { fontSize: 14 },
+  badgeRow: { flexDirection: 'row', marginTop: 4 },
+  actions: { flexDirection: 'row' },
+  iconButton: { width: 36, height: 36, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  loader: { marginVertical: 30 },
+  empty: { paddingVertical: 36, paddingHorizontal: 20, textAlign: 'center', fontSize: 14 },
+  errorBox: { padding: 16, borderRadius: 10, alignItems: 'center', gap: 8 },
   errorText: { fontSize: 14, textAlign: 'center' },
   retry: { paddingVertical: 6, paddingHorizontal: 12 },
   retryText: { fontSize: 14, fontWeight: 'bold' },
-  fab: {
-    position: 'absolute',
-    right: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    height: 52,
-    paddingHorizontal: 20,
-    borderRadius: 26,
-    backgroundColor: '#C49A3A',
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
-  },
-  fabText: { color: '#242629', fontSize: 15, fontWeight: 'bold' },
 });

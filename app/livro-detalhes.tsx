@@ -64,7 +64,7 @@ export default function LivroDetalhesScreen() {
   if (loading) {
     return (
       <View style={[styles.screen, { backgroundColor: colors.background }]}>
-        <ActivityIndicator style={{ marginTop: 40 }} color={colors.gold} />
+        <ActivityIndicator style={{ marginTop: 40 }} color={colors.primary} />
       </View>
     );
   }
@@ -83,7 +83,7 @@ export default function LivroDetalhesScreen() {
   return (
     <View style={[styles.screen, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={[styles.eyebrow, { color: colors.goldText }]}>{livro.categoria?.nome?.toUpperCase()}</Text>
+        <Text style={[styles.eyebrow, { color: colors.primary }]}>{livro.categoria?.nome?.toUpperCase()}</Text>
         <Text style={[styles.title, { color: colors.text }]}>{livro.titulo}</Text>
         <Text style={[styles.description, { color: colors.textMuted }]}>
           {livro.autores.map((autor) => autor.nome).join(', ') || 'Autor não informado'}
@@ -119,16 +119,16 @@ export default function LivroDetalhesScreen() {
 
         {disponivel ? (
           <Pressable
-            style={styles.primaryButton}
+            style={[styles.primaryButton, { backgroundColor: colors.primary }]}
             onPress={() =>
               router.push({ pathname: '/formulario', params: { recurso: 'emprestimos', livroId: String(livro.id) } })
             }
           >
-            <Text style={styles.primaryButtonText}>Registrar empréstimo</Text>
+            <Text style={[styles.primaryButtonText, { color: colors.onPrimary }]}>Registrar empréstimo</Text>
           </Pressable>
         ) : (
           <Pressable
-            style={styles.primaryButton}
+            style={[styles.primaryButton, { backgroundColor: colors.primary }]}
             onPress={() =>
               router.push({
                 pathname: '/formulario',
@@ -136,12 +136,12 @@ export default function LivroDetalhesScreen() {
               })
             }
           >
-            <Text style={styles.primaryButtonText}>Ver empréstimo</Text>
+            <Text style={[styles.primaryButtonText, { color: colors.onPrimary }]}>Ver empréstimo</Text>
           </Pressable>
         )}
 
         <Pressable
-          style={[styles.secondaryButton, { borderColor: colors.borderStrong }]}
+          style={[styles.secondaryButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
           onPress={() => router.push({ pathname: '/formulario', params: { recurso: 'livros', id: String(livro.id) } })}
         >
           <Text style={[styles.secondaryButtonText, { color: colors.text }]}>Editar livro</Text>

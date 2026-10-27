@@ -1,14 +1,15 @@
 import { Link, router } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
+import BrandMark from '@/components/brand-mark';
 import { useAppTheme } from '@/contexts/theme-context';
 import styles from '@/styles/auth.styles';
 import { avisar } from '@/utils/dialogs';
 
 export default function LoginScreen() {
-  const { colors, resolvedMode } = useAppTheme();
+  const { colors } = useAppTheme();
+  const inputColors = { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text };
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,11 +29,10 @@ export default function LoginScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.background }]}>
-      <StatusBar style={resolvedMode === 'dark' ? 'light' : 'dark'} />
 
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.brand}>
-          <Text style={styles.brandSymbol}>B</Text>
+          <BrandMark />
           <Text style={[styles.brandName, { color: colors.text }]}>Biblioteca</Text>
         </View>
 
@@ -48,10 +48,10 @@ export default function LoginScreen() {
               value={email}
               onChangeText={setEmail}
               placeholder="seu@email.com"
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.placeholder}
               keyboardType="email-address"
               autoCapitalize="none"
-              style={styles.input}
+              style={[styles.input, inputColors]}
             />
           </View>
 
@@ -61,25 +61,25 @@ export default function LoginScreen() {
               value={password}
               onChangeText={setPassword}
               placeholder="Digite sua senha"
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.placeholder}
               secureTextEntry
-              style={styles.input}
+              style={[styles.input, inputColors]}
             />
           </View>
 
-          <Pressable style={styles.button} onPress={handleLogin}>
-            <Text style={styles.buttonText}>Entrar</Text>
+          <Pressable style={[styles.button, { backgroundColor: colors.primary }]} onPress={handleLogin}>
+            <Text style={[styles.buttonText, { color: colors.onPrimary }]}>Entrar</Text>
           </Pressable>
         </View>
 
         <Text style={[styles.secondaryText, { color: colors.textMuted }]}>
           Ainda não tem cadastro?{' '}
-          <Link href="/cadastro" style={styles.link}>
+          <Link href="/cadastro" style={[styles.link, { color: colors.primary }]}>
             Criar conta
           </Link>
         </Text>
 
-        <Text style={styles.notice}>
+        <Text style={[styles.notice, { color: colors.placeholder }]}>
           Login real será conectado quando a API Spring Boot possuir autenticação e senha.
         </Text>
       </ScrollView>

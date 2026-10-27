@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 
+import BrandMark from '@/components/brand-mark';
 import { useAppTheme } from '@/contexts/theme-context';
 import styles from '@/styles/biblioteca.styles';
 
@@ -14,11 +15,11 @@ export default function HomeScreen() {
 
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.brand}>
-          <Text style={styles.brandSymbol}>B</Text>
+          <BrandMark />
           <Text style={[styles.brandName, { color: colors.text }]}>Biblioteca</Text>
         </View>
 
-        <Text style={[styles.eyebrow, { color: colors.goldText }]}>BEM-VINDO</Text>
+        <Text style={[styles.eyebrow, { color: colors.primary }]}>BEM-VINDO</Text>
 
         <Text style={[styles.title, { color: colors.text }]}>
           Seus livros e empréstimos em um só lugar.
@@ -29,14 +30,14 @@ export default function HomeScreen() {
         </Text>
 
         <Pressable
-          style={styles.primaryButton}
+          style={[styles.primaryButton, { backgroundColor: colors.primary }]}
           onPress={() => router.push('/login')}
         >
-          <Text style={styles.primaryButtonText}>Entrar</Text>
+          <Text style={[styles.primaryButtonText, { color: colors.onPrimary }]}>Entrar</Text>
         </Pressable>
 
         <Pressable
-          style={[styles.secondaryButton, { borderColor: colors.borderStrong }]}
+          style={[styles.secondaryButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
           onPress={() => router.push('/cadastro')}
         >
           <Text style={[styles.secondaryButtonText, { color: colors.text }]}>
@@ -45,7 +46,7 @@ export default function HomeScreen() {
         </Pressable>
 
         <Pressable onPress={() => router.push('/painel')}>
-          <Text style={[styles.demoLink, { color: colors.goldText }]}>
+          <Text style={[styles.demoLink, { color: colors.primary }]}>
             Ver protótipo sem login
           </Text>
         </Pressable>

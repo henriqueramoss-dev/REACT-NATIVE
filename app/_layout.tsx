@@ -11,24 +11,26 @@ export default function RootLayout() {
 }
 
 function AppNavigator() {
-  const { colors, resolvedMode } = useAppTheme();
+  const { colors } = useAppTheme();
 
   return (
     <>
-      <StatusBar style={resolvedMode === 'dark' ? 'light' : 'dark'} />
+      <StatusBar style="light" />
 
       <Stack
         screenOptions={{
+          // Cabeçalho azul-marinho, como o menu lateral do site.
           headerShadowVisible: false,
-          headerStyle: { backgroundColor: colors.background },
-          headerTintColor: colors.text,
+          headerStyle: { backgroundColor: colors.header },
+          headerTintColor: colors.headerText,
+          headerTitleStyle: { fontWeight: 'bold' },
           contentStyle: { backgroundColor: colors.background },
         }}
       >
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="login" options={{ title: 'Entrar' }} />
         <Stack.Screen name="cadastro" options={{ title: 'Cadastro' }} />
-        <Stack.Screen name="painel" options={{ title: '' }} />
+        <Stack.Screen name="painel" options={{ title: 'Biblioteca' }} />
         <Stack.Screen name="emprestimos" options={{ title: 'Empréstimos' }} />
         <Stack.Screen name="livros" options={{ title: 'Livros' }} />
         <Stack.Screen name="livro-detalhes" options={{ title: 'Detalhes do livro' }} />
