@@ -2,9 +2,9 @@ import { StyleSheet, Text } from 'react-native';
 
 import { useAppTheme } from '@/contexts/theme-context';
 
-type Tone = 'ok' | 'warn' | 'danger';
-
-export default function StatusBadge({ text, tone }: { text: string; tone: Tone }) {
+// Selo colorido de status. tone pode ser 'ok' (verde), 'warn' (cinza) ou 'danger' (vermelho).
+// Arquivo em JavaScript (.jsx): componente pequeno, sem tipos.
+export default function StatusBadge({ text, tone }) {
   const { colors } = useAppTheme();
 
   const palette = {

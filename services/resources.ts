@@ -2,7 +2,7 @@
 // As telas de listagem e de formulário são montadas a partir daqui.
 // O front-end web (repositório API-DE-JAVA-) usa um arquivo equivalente.
 
-import { isoToBr } from '@/utils/dates';
+import { formatDate, isoToBr, isValidIsoDate, today } from '@/utils/dates';
 
 export type StatusEmprestimo = 'ATIVO' | 'DEVOLVIDO' | 'ATRASADO';
 
@@ -121,25 +121,8 @@ const opt = (v: string | string[] | undefined) => str(v) || null;
 const num = (v: string | string[] | undefined) => (str(v) === '' ? null : Number(str(v)));
 const ids = (v: string | string[] | undefined) => (Array.isArray(v) ? v.map(Number) : []);
 
-/** Converte "2026-10-09" em "09/10/2026". */
-export function formatDate(iso?: string) {
-  return iso ? isoToBr(iso) : '—';
-}
-
-/** Confere formato AAAA-MM-DD e se a data existe (ex.: 31/02 é inválida). */
-export function isValidIsoDate(value: string) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-  const [y, m, d] = value.split('-').map(Number);
-  const date = new Date(Date.UTC(y, m - 1, d));
-  return date.getUTCFullYear() === y && date.getUTCMonth() === m - 1 && date.getUTCDate() === d;
-}
-
-export function today(offsetDays = 0) {
-  const d = new Date();
-  d.setDate(d.getDate() + offsetDays);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
+// formatDate, isValidIsoDate e today ficam em utils/dates.js (JavaScript puro).
+export { formatDate, isValidIsoDate, today };
 
 const statusTone = { ATIVO: 'ok', DEVOLVIDO: 'warn', ATRASADO: 'danger' } as const;
 

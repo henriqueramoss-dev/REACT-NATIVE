@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { useAppTheme } from '@/contexts/theme-context';
 
-/** Símbolo da Biblioteca: o mesmo ícone de livro do menu do site. */
+/** (JavaScript) Símbolo da Biblioteca: o mesmo ícone de livro do menu do site. */
 export default function BrandMark() {
   const { colors } = useAppTheme();
 
