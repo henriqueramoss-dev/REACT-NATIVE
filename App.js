@@ -20,7 +20,7 @@ import LivroDetalhes from "./src/screens/livro-detalhes"
 import Autores from "./src/screens/autores"
 import Categorias from "./src/screens/categorias"
 import Usuarios from "./src/screens/usuarios"
-import Perfis from "./src/screens/perfis"
+import Carteirinhas from "./src/screens/carteirinhas"
 import Formulario from "./src/screens/formulario"
 import Configuracoes from "./src/screens/configuracoes"
 
@@ -132,9 +132,9 @@ const Navigation = () => {
                     />
 
                     <Stack.Screen
-                        name="Perfis"
-                        component={Perfis}
-                        options={{ title: "Perfis" }}
+                        name="Carteirinhas"
+                        component={Carteirinhas}
+                        options={{ title: "Carteirinhas" }}
                     />
 
                     <Stack.Screen

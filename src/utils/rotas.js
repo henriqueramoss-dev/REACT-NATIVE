@@ -6,7 +6,7 @@ const TELA_DA_LISTA = {
     autores: "Autores",
     categorias: "Categorias",
     usuarios: "Usuarios",
-    perfis: "Perfis"
+    carteirinhas: "Carteirinhas"
 }
 
 
