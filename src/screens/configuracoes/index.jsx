@@ -46,7 +46,7 @@ const Configuracoes = () => {
     const navigation = useNavigation()
     const { colors, mode, setMode } = useAppTheme()
     const { usuario, sair } = useAuth()
-    const { notificacoes, setNotificacoes } = usePreferencias()
+    const { notificacoes, setNotificacoes, capasReais, setCapasReais } = usePreferencias()
 
     const [senhaAtual, setSenhaAtual] = useState("")
     const [novaSenha, setNovaSenha] = useState("")
@@ -231,6 +231,39 @@ const Configuracoes = () => {
                     <Hint>
                         {"\"Automático\" acompanha o modo do aparelho. A escolha fica salva neste aparelho."}
                     </Hint>
+
+                </Card>
+
+                <SectionTitle>
+                    Capas dos livros
+                </SectionTitle>
+
+                <Card>
+
+                    <SwitchRow>
+
+                        <SwitchTexts>
+
+                            <SwitchTitle>
+                                Mostrar capas reais
+                            </SwitchTitle>
+
+                            <SwitchDescription>
+                                Busca a imagem da capa pelo ISBN no Open Library. O serviço recebe o ISBN do livro e o
+                                endereço de internet do aparelho. Desligado, o app usa só as capas ilustradas.
+                            </SwitchDescription>
+
+                        </SwitchTexts>
+
+                        <Switch
+                            value={capasReais}
+                            onValueChange={setCapasReais}
+                            trackColor={{ false: colors.border, true: colors.primary }}
+                            thumbColor="#FFFFFF"
+                            accessibilityLabel="Mostrar capas reais de livros"
+                        />
+
+                    </SwitchRow>
 
                 </Card>
 

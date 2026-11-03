@@ -3,6 +3,7 @@ import { useState } from "react"
 import { useNavigation } from "@react-navigation/native"
 
 import BrandMark from "../../components/brand-mark"
+import { LivroAberto } from "../../components/ilustracoes"
 import { useAppTheme } from "../../contexts/theme-context"
 import { useAuth } from "../../contexts/auth-context"
 import { create } from "../../services/biblioteca-api"
@@ -15,6 +16,7 @@ import {
     Content,
     Brand,
     BrandName,
+    Ilustracao,
     Title,
     Description,
     Form,
@@ -170,6 +172,10 @@ const Cadastro = () => {
                     </BrandName>
 
                 </Brand>
+
+                <Ilustracao>
+                    <LivroAberto width={190} />
+                </Ilustracao>
 
                 <Title>
                     Criar conta

@@ -1,6 +1,7 @@
 
 import styled from "styled-components/native"
 
+import { FONTE_TITULO } from "../../utils/fontes"
 import { cor } from "../../utils/tema"
 
 
@@ -16,6 +17,14 @@ const Container = styled.View`
     flex: 1;
 
     background-color: ${cor("background")};
+`
+
+
+const Faixa = styled.View`
+    background-color: ${cor("surfaceMuted")};
+
+    border-bottom-width: 1px;
+    border-bottom-color: ${cor("border")};
 `
 
 
@@ -49,7 +58,8 @@ const PageHeaderText = styled.View`
 
 
 const Title = styled.Text`
-    font-size: 24px;
+    font-family: ${FONTE_TITULO};
+    font-size: 26px;
     font-weight: bold;
 
     color: ${cor("text")};
@@ -152,6 +162,7 @@ const StatLabel = styled.Text`
 
 
 const StatValue = styled.Text`
+    font-family: ${FONTE_TITULO};
     font-size: 26px;
     font-weight: bold;
 
@@ -242,7 +253,8 @@ const CardHeader = styled.View`
 
 
 const CardTitle = styled.Text`
-    font-size: 16px;
+    font-family: ${FONTE_TITULO};
+    font-size: 17px;
     font-weight: bold;
 
     color: ${cor("text")};
@@ -309,6 +321,7 @@ const ApiInfo = styled.Text`
 
 export {
     Container,
+    Faixa,
     Content,
     PageHeader,
     PageHeaderText,

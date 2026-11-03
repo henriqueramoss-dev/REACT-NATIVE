@@ -3,6 +3,7 @@ import { useCallback, useState } from "react"
 import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native"
 
 import StatusBadge from "../../components/status-badge"
+import CapaDoLivro from "../../components/capa-do-livro"
 import { useAppTheme } from "../../contexts/theme-context"
 import { get, list, remove } from "../../services/biblioteca-api"
 import { formatDate, RESOURCES } from "../../services/resources"
@@ -13,6 +14,7 @@ import {
     Content,
     Loader,
     Message,
+    CapaArea,
     Eyebrow,
     Title,
     Authors,
@@ -155,6 +157,10 @@ const LivroDetalhes = () => {
         <Container>
 
             <Content>
+
+                <CapaArea>
+                    <CapaDoLivro livro={livro} largura={130} tamanho="L" />
+                </CapaArea>
 
                 <Eyebrow>
                     {livro.categoria?.nome?.toUpperCase()}

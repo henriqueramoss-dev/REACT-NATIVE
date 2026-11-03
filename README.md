@@ -7,7 +7,7 @@ Aplicativo em **React Native + Expo (SDK 54, React Navigation e styled-component
 | Tela | O que faz |
 |---|---|
 | Início, Entrar e Criar conta | Boas-vindas; o login confere e-mail e senha na API (`POST /auth/login`) e o cadastro cria **Usuário (com senha) + Perfil** |
-| Configurações | Engrenagem no cabeçalho do painel: tema claro/escuro/automático, lembretes de devolução (notificações locais), troca de senha e saída da conta |
+| Configurações | Engrenagem no cabeçalho do painel: tema claro/escuro/automático, capas reais de livros, lembretes de devolução (notificações locais), troca de senha e saída da conta |
 | Painel | Empréstimos ativos, devolvidos e atrasados, totais de cada cadastro e atalhos |
 | Empréstimos | Lista com filtro por status (`/emprestimos/buscar?status=`) |
 | Livros | Lista com busca por título; ao tocar abre os **detalhes do livro**, com a situação (disponível ou emprestado) e o botão para registrar empréstimo |
@@ -38,9 +38,15 @@ Para usar outro endereço, crie um arquivo `.env` na raiz do projeto com a linha
 EXPO_PUBLIC_API_URL=http://192.168.0.10:8080
 ```
 
+## Visual de biblioteca e capas de livros
+
+O app usa uma paleta de papel, couro e madeira (a mesma do site), títulos com serifa e ilustrações em SVG desenhadas no projeto: estante (abertura), livro aberto (entrar e criar conta), faixa de lombadas (painel), pilha de livros (listas vazias) e capas ilustradas (livros). As ilustrações ficam em `src/components/ilustracoes`.
+
+As **capas reais** dos livros vêm do [Open Library](https://openlibrary.org), buscadas pelo ISBN (`src/utils/capas.js`). Se o livro não tiver capa lá, ou se estiver sem internet, aparece a capa ilustrada. O Open Library recebe o ISBN e o endereço de internet do aparelho; para evitar isso, desligue em **Configurações → Capas dos livros**.
+
 ## Armazenamento no aparelho e notificações
 
-O app guarda no aparelho (AsyncStorage; no navegador, `localStorage`) apenas: o tema escolhido, a escolha dos lembretes e, depois de entrar, o `id`, o nome e o e-mail da conta. **A senha não é guardada.** Tocar em **Sair** apaga a conta do aparelho.
+O app guarda no aparelho (AsyncStorage; no navegador, `localStorage`) apenas: o tema escolhido, a escolha das capas reais, a escolha dos lembretes e, depois de entrar, o `id`, o nome e o e-mail da conta. **A senha não é guardada.** Tocar em **Sair** apaga a conta do aparelho.
 
 Os lembretes de devolução são notificações **locais** (`expo-notifications`): ao ligar a chave, o app pede permissão e agenda um aviso às 9h da véspera da devolução de cada empréstimo ativo. Eles são refeitos sempre que o painel abre. Não funcionam na versão web. No **Expo Go para Android** as notificações remotas não existem desde o SDK 53 e a biblioteca mostra um aviso; para testar os lembretes por lá, use um *development build*.
 

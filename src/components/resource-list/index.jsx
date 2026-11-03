@@ -6,6 +6,8 @@ import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/nativ
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 import StatusBadge from "../status-badge"
+import CapaDoLivro from "../capa-do-livro"
+import { PilhaDeLivros } from "../ilustracoes"
 import { useAppTheme } from "../../contexts/theme-context"
 import { list, remove } from "../../services/biblioteca-api"
 import { RESOURCES } from "../../services/resources"
@@ -29,8 +31,10 @@ import {
     ErrorText,
     RetryText,
     Table,
+    EmptyArt,
     EmptyText,
     Row,
+    Capa,
     RowBody,
     RowTitle,
     RowSubtitle,
@@ -308,6 +312,10 @@ const ResourceList = ({ resourceKey }) => {
                         </ErrorBox>
                     ) : (
                         <Table>
+                            <EmptyArt>
+                                <PilhaDeLivros width={150} />
+                            </EmptyArt>
+
                             <EmptyText>
                                 {term ? "Nenhum resultado para a busca." : resource.emptyLabel}
                             </EmptyText>
@@ -344,6 +352,12 @@ const ResourceList = ({ resourceKey }) => {
                             onPress={() => handleOpen(item)}
                             activeOpacity={0.7}
                         >
+
+                            {resource.key === "livros" && (
+                                <Capa>
+                                    <CapaDoLivro livro={item} largura={42} />
+                                </Capa>
+                            )}
 
                             <RowBody>
 

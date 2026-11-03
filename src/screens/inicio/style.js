@@ -1,6 +1,7 @@
 
 import styled from "styled-components/native"
 
+import { FONTE_TITULO } from "../../utils/fontes"
 import { cor } from "../../utils/tema"
 
 
@@ -32,10 +33,18 @@ const Brand = styled.View`
 
 
 const BrandName = styled.Text`
-    font-size: 19px;
+    font-family: ${FONTE_TITULO};
+    font-size: 21px;
     font-weight: bold;
 
     color: ${cor("text")};
+`
+
+
+const Ilustracao = styled.View`
+    align-items: center;
+
+    margin: 0 0 22px 0;
 `
 
 
@@ -51,6 +60,7 @@ const Eyebrow = styled.Text`
 const Title = styled.Text`
     margin-top: 10px;
 
+    font-family: ${FONTE_TITULO};
     font-size: 30px;
     font-weight: bold;
     line-height: 38px;
@@ -131,6 +141,7 @@ export {
     Content,
     Brand,
     BrandName,
+    Ilustracao,
     Eyebrow,
     Title,
     Description,

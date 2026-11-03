@@ -56,12 +56,21 @@ Quando o celular muda para o modo escuro, as cores trocam sozinhas.
 | Arquivo | O que guarda |
 |---|---|
 | `src/contexts/auth-context.jsx` | Quem entrou (`id`, nome e e-mail). Funções `entrar`, `guardar` e `sair`. A senha nunca é guardada |
-| `src/contexts/preferencias-context.jsx` | A escolha dos lembretes de devolução |
+| `src/contexts/preferencias-context.jsx` | A escolha dos lembretes de devolução e das capas reais |
 | `src/contexts/theme-context.tsx` | O tema (claro, escuro ou automático) |
 | `src/utils/armazenamento.js` | `lerValor`, `gravarValor` e `apagarValor`, em cima do AsyncStorage |
 | `src/utils/lembretes.js` | Agenda os avisos de devolução (notificações locais) |
 
 Qualquer tela lê esses dados com `useAuth()`, `usePreferencias()` e `useAppTheme()`.
+
+## Ilustrações e capas
+
+| Arquivo | O que faz |
+|---|---|
+| `src/components/ilustracoes/index.jsx` | Desenhos em SVG: `Estante`, `LivroAberto`, `PilhaDeLivros`, `FaixaDeLombadas` e `CapaDeLivro` (o site usa o mesmo arquivo) |
+| `src/components/capa-do-livro/` | `CapaDoLivro`: capa real pelo ISBN ou, se não houver, a capa ilustrada |
+| `src/utils/capas.js` | Monta o endereço da capa no Open Library a partir do ISBN |
+| `src/utils/fontes.js` | Fonte com serifa dos títulos |
 
 ## JavaScript e TypeScript
 
