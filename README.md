@@ -6,12 +6,12 @@ Aplicativo em **React Native + Expo (SDK 54, React Navigation e styled-component
 
 | Tela | O que faz |
 |---|---|
-| Início, Entrar e Criar conta | Boas-vindas; o login confere e-mail e senha na API (`POST /auth/login`) e o cadastro cria **Usuário (com senha) + Perfil** |
+| Início, Entrar e Criar conta | Boas-vindas; o login confere e-mail e senha na API (`POST /auth/login`) e o cadastro cria o **Usuário** (com senha e dados pessoais) |
 | Configurações | Engrenagem no cabeçalho do painel: tema claro/escuro/automático, capas reais de livros, lembretes de devolução (notificações locais), troca de senha e saída da conta |
 | Painel | Empréstimos ativos, devolvidos e atrasados, totais de cada cadastro e atalhos |
 | Empréstimos | Lista com filtro por status (`/emprestimos/buscar?status=`) |
 | Livros | Lista com busca por título; ao tocar abre os **detalhes do livro**, com a situação (disponível ou emprestado) e o botão para registrar empréstimo |
-| Autores, Categorias, Usuários e Perfis | Lista com busca, atualização ao puxar a tela e carregamento de mais itens ao rolar |
+| Autores, Categorias, Usuários e Carteirinhas | Lista com busca, atualização ao puxar a tela e carregamento de mais itens ao rolar |
 | Formulário | Cadastro e edição de qualquer entidade: seleção de livro, usuário, categoria e autores, datas no formato DD/MM/AAAA e erros de validação da API exibidos em cada campo |
 
 Todas as listas permitem excluir registros, com confirmação.
@@ -58,7 +58,7 @@ index.js                  ponto de entrada do Expo
 src/
   screens/<tela>/         uma pasta por tela: index.jsx (lógica) + style.js (estilos)
     inicio, login, cadastro, painel
-    emprestimos, livros, autores, categorias, usuarios, perfis   listagens
+    emprestimos, livros, autores, categorias, usuarios, carteirinhas   listagens
     livro-detalhes        detalhes do livro e situação de empréstimo
     formulario            cadastro/edição genérico
     configuracoes         tema, notificações, troca de senha e sair da conta

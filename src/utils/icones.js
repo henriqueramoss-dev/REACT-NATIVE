@@ -6,7 +6,7 @@ const RESOURCE_ICONS = {
     autores: "pencil-outline",
     categorias: "pricetag-outline",
     usuarios: "person-outline",
-    perfis: "id-card-outline"
+    carteirinhas: "id-card-outline"
 }
 
 

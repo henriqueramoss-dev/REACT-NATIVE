@@ -34,7 +34,7 @@ Os parâmetros chegam na tela por `useRoute().params`.
 | `Login` | `src/screens/login` |
 | `Cadastro` | `src/screens/cadastro` |
 | `Painel` | `src/screens/painel` |
-| `Emprestimos`, `Livros`, `Autores`, `Categorias`, `Usuarios`, `Perfis` | `src/screens/<nome>` (listagens) |
+| `Emprestimos`, `Livros`, `Autores`, `Categorias`, `Usuarios`, `Carteirinhas` | `src/screens/<nome>` (listagens) |
 | `LivroDetalhes` | `src/screens/livro-detalhes` |
 | `Formulario` | `src/screens/formulario` |
 | `Configuracoes` | `src/screens/configuracoes` (aberta pela engrenagem do painel) |

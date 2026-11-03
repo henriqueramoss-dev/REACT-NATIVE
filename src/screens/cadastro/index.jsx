@@ -74,25 +74,24 @@ const Cadastro = () => {
         return primeiro || erro.message
     }
 
-    // CRIA O USUÁRIO E, EM SEGUIDA, O PERFIL DELE NA API
+    // CRIA O USUÁRIO NA API: UM ÚNICO ENVIO, COM TODOS OS DADOS (INCLUSIVE OS PESSOAIS)
     const handleSignUp = async () => {
 
-        // AS MESMAS REGRAS DOS FORMULÁRIOS DE USUÁRIOS E PERFIS (src/services/resources.ts)
+        // AS MESMAS REGRAS DO FORMULÁRIO DE USUÁRIOS (src/services/resources.ts)
         const nascimentoIso = brToIso(dataNascimento) ?? dataNascimento
 
-        const erros = {
-            ...validate(RESOURCES.usuarios, { nome, email, cpf, tipo }),
-            // O USUÁRIO AINDA NÃO EXISTE: UM ID QUALQUER SÓ FAZ O CAMPO "USUÁRIO" PASSAR NA VALIDAÇÃO
-            ...validate(RESOURCES.perfis, {
-                usuarioId: "0",
-                telefone,
-                endereco,
-                cidade,
-                estado,
-                cep,
-                dataNascimento: nascimentoIso
-            })
-        }
+        const erros = validate(RESOURCES.usuarios, {
+            nome,
+            email,
+            cpf,
+            tipo,
+            telefone,
+            endereco,
+            cidade,
+            estado,
+            cep,
+            dataNascimento: nascimentoIso
+        })
 
         // A SENHA NÃO FAZ PARTE DO RESOURCE: CONFERE AQUI
         if (senha.length < 8 || senha.length > 72) erros.senha = "A senha deve ter de 8 a 72 caracteres."
@@ -107,51 +106,30 @@ const Cadastro = () => {
 
         setCarregando(true)
 
-        // 1º PASSO: CRIA O USUÁRIO
-        let usuario
-
         try {
 
-            usuario = await create("usuarios", {
+            const usuario = await create("usuarios", {
                 nome: nome.trim(),
                 email: email.trim().toLowerCase(),
                 cpf: cpf,
                 tipo: tipo,
-                senha: senha
-            })
-
-        } catch (erro) {
-
-            setCarregando(false)
-            avisar("Erro no cadastro", mensagemDoErro(erro, "Não foi possível realizar o cadastro."))
-            return
-        }
-
-        // O USUÁRIO JÁ EXISTE: A CONTA FICA LOGADA MESMO SE O PERFIL FALHAR
-        guardar(usuario)
-
-        // 2º PASSO: CRIA O PERFIL LIGADO A ESSE USUÁRIO
-        try {
-
-            await create("perfis", {
-                usuarioId: usuario.id,
                 telefone: telefone.trim(),
                 endereco: endereco.trim(),
                 cidade: cidade.trim(),
                 estado: estado,
                 cep: cep,
-                dataNascimento: nascimentoIso
+                dataNascimento: nascimentoIso,
+                senha: senha
             })
 
-            avisar("Cadastro realizado", "Usuário e perfil foram cadastrados na API.", abrirPainel)
+            // A CONTA JÁ FICA LOGADA
+            guardar(usuario)
+
+            avisar("Cadastro realizado", "Sua conta foi criada na API.", abrirPainel)
 
         } catch (erro) {
 
-            avisar(
-                "Perfil não cadastrado",
-                `O usuário foi criado, mas o perfil não pôde ser salvo (${mensagemDoErro(erro, "Erro desconhecido.")}). Complete-o pela tela Perfis.`,
-                abrirPainel
-            )
+            avisar("Erro no cadastro", mensagemDoErro(erro, "Não foi possível realizar o cadastro."))
 
         } finally {
             setCarregando(false)
