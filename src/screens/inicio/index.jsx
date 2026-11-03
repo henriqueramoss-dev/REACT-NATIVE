@@ -1,8 +1,10 @@
 
+import { useWindowDimensions } from "react-native"
 import { StatusBar } from "expo-status-bar"
 import { useNavigation } from "@react-navigation/native"
 
 import BrandMark from "../../components/brand-mark"
+import { Estante } from "../../components/ilustracoes"
 import { useAppTheme } from "../../contexts/theme-context"
 
 import {
@@ -10,6 +12,7 @@ import {
     Content,
     Brand,
     BrandName,
+    Ilustracao,
     Eyebrow,
     Title,
     Description,
@@ -24,6 +27,10 @@ const Inicio = () => {
 
     const navigation = useNavigation()
     const { resolvedMode } = useAppTheme()
+    const { width } = useWindowDimensions()
+
+    // A ESTANTE OCUPA A LARGURA DA TELA, ATÉ UM LIMITE
+    const larguraEstante = Math.min(width - 40, 360)
 
     // ABRIR TELA DE LOGIN
     const handleLogin = () => {
@@ -56,6 +63,10 @@ const Inicio = () => {
                     </BrandName>
 
                 </Brand>
+
+                <Ilustracao>
+                    <Estante width={larguraEstante} />
+                </Ilustracao>
 
                 <Eyebrow>
                     BEM-VINDO

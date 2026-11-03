@@ -18,7 +18,7 @@ const BrandMark = () => {
             <Ionicons
                 name="book-outline"
                 size={22}
-                color={colors.headerText}
+                color={colors.gold}
             />
 
         </Mark>

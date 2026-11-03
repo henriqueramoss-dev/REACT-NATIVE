@@ -2,6 +2,7 @@
 import styled from "styled-components/native"
 import { ActivityIndicator } from "react-native"
 
+import { FONTE_TITULO } from "../../utils/fontes"
 import { cor } from "../../utils/tema"
 
 
@@ -37,6 +38,13 @@ const Message = styled.Text`
 `
 
 
+const CapaArea = styled.View`
+    align-items: center;
+
+    margin-bottom: 20px;
+`
+
+
 const Eyebrow = styled.Text`
     font-size: 11px;
     font-weight: bold;
@@ -49,6 +57,7 @@ const Eyebrow = styled.Text`
 const Title = styled.Text`
     margin-top: 10px;
 
+    font-family: ${FONTE_TITULO};
     font-size: 30px;
     font-weight: bold;
     line-height: 38px;
@@ -187,6 +196,7 @@ export {
     Content,
     Loader,
     Message,
+    CapaArea,
     Eyebrow,
     Title,
     Authors,

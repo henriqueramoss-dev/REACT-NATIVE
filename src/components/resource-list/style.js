@@ -2,6 +2,7 @@
 import styled from "styled-components/native"
 import { ActivityIndicator, FlatList } from "react-native"
 
+import { FONTE_TITULO } from "../../utils/fontes"
 import { cor } from "../../utils/tema"
 
 
@@ -168,10 +169,18 @@ const Table = styled.View`
 `
 
 
-const EmptyText = styled.Text`
-    padding: 36px 20px;
+const EmptyArt = styled.View`
+    align-items: center;
 
-    font-size: 14px;
+    padding-top: 22px;
+`
+
+
+const EmptyText = styled.Text`
+    padding: 6px 20px 30px;
+
+    font-family: ${FONTE_TITULO};
+    font-size: 16px;
     text-align: center;
 
     color: ${cor("textMuted")};
@@ -189,6 +198,9 @@ const Row = styled.TouchableOpacity`
     border-top-width: ${({ $primeiro }) => ($primeiro ? "0px" : "1px")};
     border-top-color: ${cor("border")};
 `
+
+
+const Capa = styled.View``
 
 
 const RowBody = styled.View`
@@ -266,8 +278,10 @@ export {
     ErrorText,
     RetryText,
     Table,
+    EmptyArt,
     EmptyText,
     Row,
+    Capa,
     RowBody,
     RowTitle,
     RowSubtitle,

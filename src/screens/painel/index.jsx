@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons"
 import { useFocusEffect, useNavigation } from "@react-navigation/native"
 
 import StatusBadge from "../../components/status-badge"
+import { FaixaDeLombadas } from "../../components/ilustracoes"
 import { useAppTheme } from "../../contexts/theme-context"
 import { useAuth } from "../../contexts/auth-context"
 import { usePreferencias } from "../../contexts/preferencias-context"
@@ -15,6 +16,7 @@ import { TELA_DA_LISTA } from "../../utils/rotas"
 
 import {
     Container,
+    Faixa,
     Content,
     PageHeader,
     PageHeaderText,
@@ -122,6 +124,10 @@ const Painel = () => {
     return (
         <Container>
 
+            <Faixa>
+                <FaixaDeLombadas height={44} />
+            </Faixa>
+
             <Content>
 
                 <PageHeader>
@@ -129,7 +135,7 @@ const Painel = () => {
                     <PageHeaderText>
 
                         <Title>
-                            Início
+                            {usuario ? `Olá, ${usuario.nome.split(" ")[0]}` : "Início"}
                         </Title>
 
                         <Subtitle>

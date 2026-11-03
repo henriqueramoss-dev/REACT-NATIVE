@@ -12,6 +12,9 @@ const Mark = styled.View`
 
     background-color: ${cor("header")};
 
+    border-width: 1.5px;
+    border-color: ${cor("gold")};
+
     align-items: center;
     justify-content: center;
 `
