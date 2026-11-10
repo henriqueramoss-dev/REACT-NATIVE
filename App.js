@@ -1,6 +1,7 @@
+import { useEffect } from "react"
 import { StatusBar } from "expo-status-bar"
 import { ThemeProvider } from "styled-components/native"
-import { NavigationContainer } from "@react-navigation/native"
+import { NavigationContainer, createNavigationContainerRef } from "@react-navigation/native"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 
 import { AppThemeProvider, useAppTheme } from "./src/contexts/theme-context"
@@ -9,10 +10,14 @@ import { PreferenciasProvider } from "./src/contexts/preferencias-context"
 
 import HeaderActions from "./src/components/header-actions"
 import HeaderBrand from "./src/components/header-brand"
+import HeaderCliente from "./src/components/header-cliente"
 
 import Inicio from "./src/screens/inicio"
 import Login from "./src/screens/login"
 import Cadastro from "./src/screens/cadastro"
+import Catalogo from "./src/screens/catalogo"
+import LivroCliente from "./src/screens/livro-cliente"
+import MinhasReservas from "./src/screens/minhas-reservas"
 import Painel from "./src/screens/painel"
 import Emprestimos from "./src/screens/emprestimos"
 import Livros from "./src/screens/livros"
@@ -28,14 +33,24 @@ import Configuracoes from "./src/screens/configuracoes"
 
 const Stack = createNativeStackNavigator()
 
+// Referência para navegar de fora das telas (ex.: quando a sessão termina)
+const navigationRef = createNavigationContainerRef()
+
 
 // As cores (claro/escuro) chegam às telas pelo ThemeProvider do styled-components.
 const Navigation = () => {
 
     const { colors } = useAppTheme()
-    const { usuario, carregado, sair } = useAuth()
+    const { sessao, ehFuncionario, carregado, aviso, sair } = useAuth()
 
-    // ESPERA O APP LER O USUÁRIO SALVO: QUEM JÁ ENTROU ABRE DIRETO NO PAINEL
+    // A SESSÃO TERMINOU POR CONTA DA API (CHAVE REVOGADA OU API REINICIADA): VOLTA PARA A TELA DE ENTRADA
+    useEffect(() => {
+
+        if (aviso && navigationRef.isReady()) navigationRef.reset({ index: 0, routes: [{ name: "Login" }] })
+
+    }, [aviso])
+
+    // ESPERA O APP LER A SESSÃO SALVA: A EQUIPE ABRE NO PAINEL E OS CLIENTES NO CATÁLOGO
     if (!carregado) return null
 
     return (
@@ -43,10 +58,10 @@ const Navigation = () => {
 
             <StatusBar style="light" />
 
-            <NavigationContainer>
+            <NavigationContainer ref={navigationRef}>
 
                 <Stack.Navigator
-                    initialRouteName={usuario ? "Painel" : "Inicio"}
+                    initialRouteName={!sessao ? "Inicio" : ehFuncionario ? "Painel" : "Catalogo"}
                     screenOptions={{
                         // CABEÇALHO AZUL-MARINHO, COMO O MENU LATERAL DO SITE
                         headerShadowVisible: false,
@@ -76,6 +91,30 @@ const Navigation = () => {
                     />
 
                     <Stack.Screen
+                        name="Catalogo"
+                        component={Catalogo}
+                        options={{
+                            title: "Biblioteca",
+                            headerTitle: () => <HeaderBrand />,
+                            headerBackVisible: false,
+                            headerLeft: () => null,
+                            headerRight: () => <HeaderCliente />
+                        }}
+                    />
+
+                    <Stack.Screen
+                        name="LivroCliente"
+                        component={LivroCliente}
+                        options={{ title: "Livro" }}
+                    />
+
+                    <Stack.Screen
+                        name="MinhasReservas"
+                        component={MinhasReservas}
+                        options={{ title: "Minhas reservas" }}
+                    />
+
+                    <Stack.Screen
                         name="Painel"
                         component={Painel}
                         options={({ navigation }) => ({
@@ -86,8 +125,8 @@ const Navigation = () => {
                             headerRight: () => (
                                 <HeaderActions
                                     onSettings={() => navigation.navigate("Configuracoes")}
-                                    onExit={() => {
-                                        sair()
+                                    onExit={async () => {
+                                        await sair()
                                         navigation.reset({ index: 0, routes: [{ name: "Inicio" }] })
                                     }}
                                 />

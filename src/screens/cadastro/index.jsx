@@ -34,11 +34,14 @@ import {
     Notice
 } from "./style"
 
+// A API só aceita Aluno e Visitante no cadastro aberto; funcionários e professores são cadastrados pela biblioteca.
+const TIPOS_AUTOCADASTRO = ["ALUNO", "VISITANTE"]
+
 const Cadastro = () => {
 
     const navigation = useNavigation()
     const { colors } = useAppTheme()
-    const { guardar } = useAuth()
+    const { entrar } = useAuth()
 
     const [nome, setNome] = useState("")
     const [email, setEmail] = useState("")
@@ -54,9 +57,9 @@ const Cadastro = () => {
     const [dataNascimento, setDataNascimento] = useState("")
     const [carregando, setCarregando] = useState(false)
 
-    // ABRIR O PAINEL DEPOIS DE CADASTRAR
-    const abrirPainel = () => {
-        navigation.replace("Painel")
+    // DEPOIS DE CADASTRAR, ABRE O CATÁLOGO (CLIENTE)
+    const abrirCatalogo = () => {
+        navigation.reset({ index: 0, routes: [{ name: "Catalogo" }] })
     }
 
     // ABRIR TELA DE LOGIN
@@ -108,7 +111,7 @@ const Cadastro = () => {
 
         try {
 
-            const usuario = await create("usuarios", {
+            await create("usuarios", {
                 nome: nome.trim(),
                 email: email.trim().toLowerCase(),
                 cpf: cpf,
@@ -122,10 +125,17 @@ const Cadastro = () => {
                 senha: senha
             })
 
-            // A CONTA JÁ FICA LOGADA
-            guardar(usuario)
+            // A CONTA JÁ FICA LOGADA (O LOGIN GERA A CHAVE DE API); SE FALHAR, MANDA PARA A TELA DE ENTRADA
+            try {
 
-            avisar("Cadastro realizado", "Sua conta foi criada na API.", abrirPainel)
+                await entrar(email, senha)
+
+                avisar("Cadastro realizado", "Sua conta foi criada. Escolha seu próximo livro!", abrirCatalogo)
+
+            } catch {
+
+                avisar("Cadastro realizado", "Sua conta foi criada. Entre com seu e-mail e senha.", () => navigation.replace("Login"))
+            }
 
         } catch (erro) {
 
@@ -160,7 +170,7 @@ const Cadastro = () => {
                 </Title>
 
                 <Description>
-                    Cadastre-se como leitor da biblioteca.
+                    Crie sua conta de cliente para reservar livros e retirá-los na biblioteca.
                 </Description>
 
                 <Form>
@@ -209,7 +219,7 @@ const Cadastro = () => {
 
                     <Options>
 
-                        {TIPO_USUARIO_OPTIONS.map((opcao) => {
+                        {TIPO_USUARIO_OPTIONS.filter((opcao) => TIPOS_AUTOCADASTRO.includes(opcao.value)).map((opcao) => {
 
                             const escolhida = tipo === opcao.value
 

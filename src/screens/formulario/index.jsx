@@ -202,7 +202,7 @@ const Formulario = () => {
                     {loading ? (
                         <Loader color={colors.primary} />
                     ) : (
-                        current.fields.map((field) => (
+                        current.fields.filter((field) => !(field.type === "password" && field.soCadastro && editing)).map((field) => (
                             <FormField
                                 key={field.name}
                                 field={field}

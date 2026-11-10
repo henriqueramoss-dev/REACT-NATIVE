@@ -33,7 +33,10 @@ Os parâmetros chegam na tela por `useRoute().params`.
 | `Inicio` | `src/screens/inicio` |
 | `Login` | `src/screens/login` |
 | `Cadastro` | `src/screens/cadastro` |
-| `Painel` | `src/screens/painel` |
+| `Catalogo` | `src/screens/catalogo` (início do cliente) |
+| `LivroCliente` | `src/screens/livro-cliente` (ficha do livro e reserva) |
+| `MinhasReservas` | `src/screens/minhas-reservas` |
+| `Painel` | `src/screens/painel` (início da equipe) |
 | `Emprestimos`, `Livros`, `Autores`, `Categorias`, `Usuarios`, `Carteirinhas` | `src/screens/<nome>` (listagens) |
 | `LivroDetalhes` | `src/screens/livro-detalhes` |
 | `Formulario` | `src/screens/formulario` |
@@ -55,7 +58,9 @@ Quando o celular muda para o modo escuro, as cores trocam sozinhas.
 
 | Arquivo | O que guarda |
 |---|---|
-| `src/contexts/auth-context.jsx` | Quem entrou (`id`, nome e e-mail). Funções `entrar`, `guardar` e `sair`. A senha nunca é guardada |
+| `src/contexts/auth-context.jsx` | A sessão: chave de API gerada no login (`POST /chaves-api`), nível de acesso e tipo do usuário. Funções `entrar`, `sair` (revoga a chave) e `pode(nivel)`, e `ehFuncionario` para escolher entre o painel e o catálogo. A senha nunca é guardada |
+| `src/utils/use-reservar.js` | Reservar um livro (leva ao login se não entrou) e nomes dos autores |
+| `src/components/header-cliente` | Botões do cabeçalho do cliente (minhas reservas, configurações e sair) |
 | `src/contexts/preferencias-context.jsx` | A escolha dos lembretes de devolução e das capas reais |
 | `src/contexts/theme-context.tsx` | O tema (claro, escuro ou automático) |
 | `src/utils/armazenamento.js` | `lerValor`, `gravarValor` e `apagarValor`, em cima do AsyncStorage |

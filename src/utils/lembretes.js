@@ -65,7 +65,8 @@ const buscarAtivos = async (usuarioId) => {
     const emp = RESOURCES.emprestimos
 
     if (usuarioId) {
-        const pagina = await list(`usuarios/${usuarioId}/emprestimos`, emp.embeddedKey, { size: 100, sort: "id,desc" })
+        // CLIENTES SÓ VEEM OS PRÓPRIOS EMPRÉSTIMOS (GET /reservas/minhas); DADOS DE OUTRAS PESSOAS EXIGEM CHAVE DA EQUIPE
+        const pagina = await list("reservas/minhas", emp.embeddedKey, { size: 100, sort: "id,desc" })
         return pagina.items.filter((e) => e.status === "ATIVO")
     }
 

@@ -9,7 +9,8 @@ import { cor } from "../../utils/tema"
 const coresDoStatus = {
     ATIVO: "success",
     DEVOLVIDO: "textMuted",
-    ATRASADO: "danger"
+    ATRASADO: "danger",
+    RESERVADO: "primary"
 }
 
 
@@ -128,8 +129,10 @@ const AlertAction = styled.Text`
 `
 
 
+// Quatro status (ativo, devolvido, atrasado e reservado): duas colunas, como cabe na tela do celular.
 const Stats = styled.View`
     flex-direction: row;
+    flex-wrap: wrap;
 
     gap: 10px;
 
@@ -138,7 +141,8 @@ const Stats = styled.View`
 
 
 const Stat = styled.TouchableOpacity`
-    flex: 1;
+    flex-grow: 1;
+    flex-basis: 45%;
 
     gap: 4px;
 

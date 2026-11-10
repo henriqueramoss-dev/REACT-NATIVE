@@ -1,29 +1,37 @@
-
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react"
 
-import { login } from "../services/biblioteca-api"
+import { gerarChave, revogarChave, setApiKey, setOnUnauthorized } from "../services/biblioteca-api"
 import { apagarValor, gravarValor, lerValor } from "../utils/armazenamento"
 
-const CHAVE_USUARIO = "biblioteca:usuario"
+const CHAVE_SESSAO = "biblioteca:sessao"
+
+// Do menor para o maior acesso: cada nível inclui os anteriores.
+const ORDEM = ["LEITURA", "ESCRITA", "ADMIN"]
 
 const AuthContext = createContext(undefined)
 
 
-// Guarda quem entrou no app (id, nome e e-mail). A senha NUNCA é guardada.
-// Como a API ainda não gera token, isso só serve para mostrar a conta e saber de quem trocar a senha.
+// Login do app: e-mail e senha viram uma chave de API (POST /chaves-api), guardada no aparelho.
+// A senha NUNCA é guardada. Quem é da equipe da biblioteca (tipo FUNCIONARIO) recebe uma chave ADMIN e vê o
+// painel de gestão; clientes recebem LEITURA e veem o catálogo e as próprias reservas.
 const AuthProvider = ({ children }) => {
 
-    const [usuario, setUsuario] = useState(null)
+    const [sessao, setSessao] = useState(null)
     const [carregado, setCarregado] = useState(false)
+    const [aviso, setAviso] = useState()
 
     // RECUPERA QUEM JÁ ESTAVA LOGADO AO ABRIR O APP
     useEffect(() => {
 
-        lerValor(CHAVE_USUARIO).then((salvo) => {
+        lerValor(CHAVE_SESSAO).then((salva) => {
 
             try {
-                const dados = salvo ? JSON.parse(salvo) : null
-                if (dados && Number.isInteger(dados.id)) setUsuario(dados)
+                const dados = salva ? JSON.parse(salva) : null
+
+                if (dados && dados.chave && Number.isInteger(dados.usuarioId)) {
+                    setApiKey(dados.chave)
+                    setSessao(dados)
+                }
             } catch {
                 // VALOR ESTRAGADO: IGNORA
             }
@@ -33,33 +41,87 @@ const AuthProvider = ({ children }) => {
 
     }, [])
 
-    // GUARDA O USUÁRIO (SÓ OS CAMPOS NECESSÁRIOS)
-    const guardar = useCallback((dados) => {
+    // A API RECUSOU A CHAVE (REVOGADA OU API REINICIADA): VOLTA A SER VISITANTE
+    useEffect(() => {
 
-        const resumo = { id: dados.id, nome: dados.nome, email: dados.email }
+        setOnUnauthorized(() => {
+            apagarValor(CHAVE_SESSAO)
+            setApiKey(undefined)
+            setSessao(null)
+            setAviso("Sua sessão terminou. Entre novamente.")
+        })
 
-        setUsuario(resumo)
-        gravarValor(CHAVE_USUARIO, JSON.stringify(resumo))
+        return () => setOnUnauthorized(undefined)
+
     }, [])
 
-    // ENTRAR: CONFERE E-MAIL E SENHA NA API (LANÇA ERRO SE ESTIVEREM INCORRETOS)
+    // ENTRAR: CONFERE E-MAIL E SENHA NA API E GUARDA A CHAVE (LANÇA ERRO SE ESTIVEREM INCORRETOS)
     const entrar = useCallback(async (email, senha) => {
 
-        const dados = await login(email.trim(), senha)
+        // FUNCIONÁRIO RECEBE ADMIN; OS DEMAIS TIPOS SÓ PODEM TER LEITURA (A API RESPONDE 403 AO PEDIDO DE ADMIN)
+        let criada
 
-        guardar(dados)
-    }, [guardar])
+        try {
+            criada = await gerarChave(email, senha, "ADMIN")
+        } catch (e) {
 
-    // SAIR: ESQUECE O USUÁRIO
-    const sair = useCallback(() => {
+            if (e.status !== 403) throw e
 
-        setUsuario(null)
-        apagarValor(CHAVE_USUARIO)
+            criada = await gerarChave(email, senha, "LEITURA")
+        }
+
+        const nova = {
+            chave: criada.chave,
+            chaveId: criada.id,
+            nivel: criada.nivel,
+            usuarioId: criada.usuarioId,
+            email: email.trim(),
+            nome: criada.usuarioNome ?? email.trim(),
+            tipo: criada.usuarioTipo
+        }
+
+        setApiKey(nova.chave)
+        gravarValor(CHAVE_SESSAO, JSON.stringify(nova))
+        setAviso(undefined)
+        setSessao(nova)
+
+        return nova
     }, [])
 
+    // SAIR: REVOGA A CHAVE NO SERVIDOR (SE FALHAR, SAI MESMO ASSIM) E ESQUECE A SESSÃO
+    const sair = useCallback(async () => {
+
+        const atual = sessao
+
+        if (atual) {
+            try {
+                await revogarChave(atual.chaveId)
+            } catch {
+                // A SESSÃO LOCAL TERMINA DE QUALQUER FORMA
+            }
+        }
+
+        apagarValor(CHAVE_SESSAO)
+        setApiKey(undefined)
+        setAviso(undefined)
+        setSessao(null)
+    }, [sessao])
+
     const value = useMemo(
-        () => ({ usuario, carregado, entrar, guardar, sair }),
-        [usuario, carregado, entrar, guardar, sair]
+        () => ({
+            sessao,
+            // MESMO FORMATO DE ANTES (id do usuário, nome, e-mail), MAIS O TIPO
+            usuario: sessao ? { id: sessao.usuarioId, nome: sessao.nome, email: sessao.email, tipo: sessao.tipo } : null,
+            carregado,
+            aviso,
+            entrar,
+            sair,
+            // EQUIPE DA BIBLIOTECA (FUNCIONARIO) × CLIENTE
+            ehFuncionario: sessao?.tipo === "FUNCIONARIO",
+            // A SESSÃO TEM PELO MENOS ESTE NÍVEL DE ACESSO?
+            pode: (nivel) => !!sessao && ORDEM.indexOf(sessao.nivel) >= ORDEM.indexOf(nivel)
+        }),
+        [sessao, carregado, aviso, entrar, sair]
     )
 
     return (

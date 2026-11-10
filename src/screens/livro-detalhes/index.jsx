@@ -209,7 +209,7 @@ const LivroDetalhes = () => {
                             <SituationRow>
 
                                 <SituationTitle>
-                                    Emprestado
+                                    {emprestimoAtual?.status === "RESERVADO" ? "Reservado" : "Emprestado"}
                                 </SituationTitle>
 
                                 {badge && (
@@ -222,8 +222,9 @@ const LivroDetalhes = () => {
                             </SituationRow>
 
                             <SituationInfo>
-                                Com {emprestimoAtual?.usuario?.nome} · devolução prevista em{" "}
-                                {formatDate(emprestimoAtual?.dataPrevistaDevolucao)}
+                                {emprestimoAtual?.status === "RESERVADO"
+                                    ? `Para ${emprestimoAtual?.usuario?.nome} · retirada até ${formatDate(emprestimoAtual?.retirarAte)}`
+                                    : `Com ${emprestimoAtual?.usuario?.nome} · devolução prevista em ${formatDate(emprestimoAtual?.dataPrevistaDevolucao)}`}
                             </SituationInfo>
                         </>
                     )}

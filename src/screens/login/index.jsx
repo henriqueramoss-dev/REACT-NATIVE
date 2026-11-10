@@ -1,6 +1,6 @@
 
 import { useState } from "react"
-import { useNavigation } from "@react-navigation/native"
+import { useNavigation, useRoute } from "@react-navigation/native"
 
 import BrandMark from "../../components/brand-mark"
 import { LivroAberto } from "../../components/ilustracoes"
@@ -29,14 +29,16 @@ import {
 const Login = () => {
 
     const navigation = useNavigation()
+    const route = useRoute()
     const { colors } = useAppTheme()
-    const { entrar } = useAuth()
+    const { entrar, aviso } = useAuth()
 
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [carregando, setCarregando] = useState(false)
 
-    // CONFERE E-MAIL E SENHA NA API E ABRE O PAINEL
+    // CONFERE E-MAIL E SENHA NA API (O LOGIN GERA A CHAVE DE API) E ABRE A TELA CERTA:
+    // PAINEL PARA A EQUIPE DA BIBLIOTECA, CATÁLOGO PARA CLIENTES
     const handleLogin = async () => {
 
         if (!email.trim() || !password) {
@@ -48,9 +50,16 @@ const Login = () => {
 
         try {
 
-            await entrar(email, password)
+            const sessao = await entrar(email, password)
 
-            navigation.replace("Painel")
+            if (sessao.tipo === "FUNCIONARIO") {
+                navigation.reset({ index: 0, routes: [{ name: "Painel" }] })
+            } else if (route.params?.voltar && navigation.canGoBack()) {
+                // VEIO DE "RESERVAR": VOLTA PARA O LIVRO
+                navigation.goBack()
+            } else {
+                navigation.reset({ index: 0, routes: [{ name: "Catalogo" }] })
+            }
 
         } catch (e) {
 
@@ -90,7 +99,7 @@ const Login = () => {
                 </Title>
 
                 <Description>
-                    Acesse o aplicativo para consultar o acervo e seus empréstimos.
+                    Entre para reservar livros e acompanhar suas reservas. A equipe da biblioteca entra por aqui também.
                 </Description>
 
                 <Form>
@@ -140,9 +149,15 @@ const Login = () => {
                     </RegisterLink>
                 </AccountText>
 
+                {aviso && (
+                    <Notice>
+                        {aviso}
+                    </Notice>
+                )}
+
                 <Notice>
-                    Contas criadas antes da senha existir (ou direto na lista de Usuários) ainda não têm senha:
-                    crie uma nova conta para entrar.
+                    Contas criadas antes da senha existir (ou direto na lista de Usuários, sem senha) não conseguem entrar:
+                    crie uma nova conta ou peça à biblioteca para definir sua senha.
                 </Notice>
 
             </Content>

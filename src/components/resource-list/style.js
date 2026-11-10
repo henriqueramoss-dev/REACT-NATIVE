@@ -260,6 +260,27 @@ const IconButton = styled.TouchableOpacity`
 `
 
 
+// Botão "Confirmar retirada" de uma reserva (lista de empréstimos).
+const PickupButton = styled.TouchableOpacity`
+    align-self: flex-start;
+
+    margin-top: 6px;
+    padding: 6px 12px;
+
+    border-width: 1px;
+    border-color: ${cor("primary")};
+    border-radius: 8px;
+`
+
+
+const PickupButtonText = styled.Text`
+    font-size: 13px;
+    font-weight: 600;
+
+    color: ${cor("primary")};
+`
+
+
 export {
     Container,
     Toolbar,
@@ -289,5 +310,7 @@ export {
     RowDetailLabel,
     BadgeRow,
     Actions,
-    IconButton
+    IconButton,
+    PickupButton,
+    PickupButtonText
 }

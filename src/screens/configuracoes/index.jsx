@@ -58,8 +58,8 @@ const Configuracoes = () => {
     const naWeb = Platform.OS === "web"
 
     // SAIR DA CONTA E VOLTAR PARA A ABERTURA
-    const handleLogout = () => {
-        sair()
+    const handleLogout = async () => {
+        await sair()
         navigation.reset({ index: 0, routes: [{ name: "Inicio" }] })
     }
 
