@@ -34,7 +34,7 @@ Os botões seguem o nível de acesso da chave: criar e editar (ESCRITA) e exclui
 
 ## Como executar
 
-1. Inicie a API (`biblioteca-api` no repositório API-BIBLIOTECA). Ela deve responder em `http://localhost:8080` e já carrega um acervo de exemplo. Para entrar como cliente, use `beatriz@exemplo.com` / `Cliente12345`; para o painel, a conta do dono configurada na API (`BIBLIOTECA_DONO_EMAIL` e `BIBLIOTECA_DONO_SENHA`).
+1. O app já usa a API publicada em `https://api-biblioteca-xgsa.onrender.com`, que carrega um acervo de exemplo. Para entrar como cliente, use `beatriz@exemplo.com` / `Cliente12345`; para o painel, a conta do dono configurada na API (`BIBLIOTECA_DONO_EMAIL` e `BIBLIOTECA_DONO_SENHA`).
 2. Instale as dependências e inicie o app:
 
    ```bash
@@ -46,15 +46,13 @@ Os botões seguem o nível de acesso da chave: criar e editar (ESCRITA) e exclui
 
 ### Endereço da API
 
-Por padrão, o app procura a API no mesmo computador que está rodando o Expo, na porta 8080. Isso funciona no Expo Go do celular quando ele e o computador estão na mesma rede Wi-Fi.
+Por padrão, o app usa a API publicada na Render, tanto no desenvolvimento quanto no app instalado:
 
-Para usar outro endereço, crie um arquivo `.env` na raiz do projeto com a linha abaixo (trocando pelo IP do seu computador) e reinicie o Expo:
-
-```bash
-EXPO_PUBLIC_API_URL=http://192.168.0.10:8080
+```text
+https://api-biblioteca-xgsa.onrender.com
 ```
 
-Para usar a API publicada, aponte para ela (no app instalado, sem a variável e fora do modo de desenvolvimento, o app já usa este endereço):
+Para usar outra API (por exemplo, uma que rode no seu computador, que o celular alcança pelo IP dele na rede Wi-Fi), crie um arquivo `.env` na raiz do projeto com a linha abaixo, trocando pelo endereço, e reinicie o Expo:
 
 ```bash
 EXPO_PUBLIC_API_URL=https://api-biblioteca-xgsa.onrender.com

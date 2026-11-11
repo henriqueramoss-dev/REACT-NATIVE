@@ -1,5 +1,3 @@
-import Constants from 'expo-constants';
-
 // Cliente HTTP da Biblioteca API (Spring Boot + HATEOAS).
 
 export type Id = number;
@@ -24,20 +22,19 @@ export class ApiError extends Error {
   }
 }
 
+// API publicada na Render: é o endereço padrão, em desenvolvimento e no app instalado.
+const API_PUBLICADA = 'https://api-biblioteca-xgsa.onrender.com';
+
 /**
  * Ordem de prioridade:
- * 1. EXPO_PUBLIC_API_URL (arquivo .env)
- * 2. IP do computador que está rodando o Expo, na porta 8080 (funciona no celular físico)
- * 3. http://localhost:8080 no desenvolvimento; a API publicada na Render no app instalado
+ * 1. EXPO_PUBLIC_API_URL (arquivo .env), para usar outra API, como uma que rode no seu computador
+ * 2. a API publicada na Render
  */
 function resolveBaseUrl() {
   const fromEnv = process.env.EXPO_PUBLIC_API_URL;
   if (fromEnv) return fromEnv.replace(/\/+$/, '');
 
-  const host = Constants.expoConfig?.hostUri?.split(':')[0];
-  if (host && host !== 'localhost' && host !== '127.0.0.1') return `http://${host}:8080`;
-
-  return __DEV__ ? 'http://localhost:8080' : 'https://api-biblioteca-xgsa.onrender.com';
+  return API_PUBLICADA;
 }
 
 const baseUrl = resolveBaseUrl();
