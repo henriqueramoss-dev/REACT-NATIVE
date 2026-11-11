@@ -6,7 +6,7 @@ Aplicativo em **React Native + Expo (SDK 54, React Navigation e styled-component
 
 O app tem o mesmo desenho do site, com layout de celular. **O tipo do usuário decide a tela depois do login**: quem é da equipe da biblioteca (tipo Funcionário) abre o **painel de gestão**; clientes (Aluno, Professor e Visitante) abrem o **catálogo** e as **reservas**. O visitante pode ver o catálogo sem entrar.
 
-O login gera uma **chave de API** (`POST /chaves-api`), que o app envia no cabeçalho `X-API-Key`. A senha nunca é guardada. Funcionário recebe uma chave ADMIN; cliente, LEITURA (só vê o catálogo e as próprias reservas, nunca dados de outras pessoas). Sair revoga a chave no servidor. Se a chave deixar de valer (revogada, ou a API reiniciou), o app volta para a tela de entrada.
+Todas as rotas da API exigem uma chave de API (`X-API-Key`). Para os visitantes, o app usa a **chave de leitura do catálogo**, que é pública, só lê livros, autores e categorias e não enxerga dado pessoal. O login gera uma **chave de API** (`POST /chaves-api`), que o app envia no cabeçalho `X-API-Key`. A senha nunca é guardada. Funcionário recebe uma chave ADMIN; cliente, LEITURA (só vê o catálogo e as próprias reservas, nunca dados de outras pessoas). Sair revoga a chave no servidor. Se a chave deixar de valer (revogada, ou a API reiniciou), o app volta para a tela de entrada.
 
 ### Área do cliente
 
