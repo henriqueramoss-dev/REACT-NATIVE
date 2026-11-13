@@ -1,10 +1,10 @@
 // Descrição de cada recurso da API: campos do formulário, busca e como exibir.
 // As telas de listagem e de formulário são montadas a partir daqui.
-// O front-end web (repositório API-DE-JAVA-) usa um arquivo equivalente.
+// O front-end web (repositório API-BIBLIOTECA, pasta biblioteca-web) usa um arquivo equivalente.
 
 import { formatDate, isValidIsoDate, today } from '../utils/dates';
 
-export type StatusEmprestimo = 'ATIVO' | 'DEVOLVIDO' | 'ATRASADO';
+export type StatusEmprestimo = 'ATIVO' | 'DEVOLVIDO' | 'ATRASADO' | 'RESERVADO';
 
 export type TipoUsuario = 'ALUNO' | 'PROFESSOR' | 'FUNCIONARIO' | 'VISITANTE';
 
@@ -48,6 +48,8 @@ export interface Livro {
   numeroPaginas: number;
   categoria: Categoria;
   autores: Autor[];
+  /** Calculada pela API: DISPONIVEL (na estante), EMPRESTADO ou INDISPONIVEL (reservado). */
+  situacao?: 'DISPONIVEL' | 'EMPRESTADO' | 'INDISPONIVEL';
 }
 export type StatusCarteirinha = 'ATIVA' | 'SUSPENSA' | 'CANCELADA';
 
@@ -65,6 +67,8 @@ export interface Emprestimo {
   dataEmprestimo: string;
   dataPrevistaDevolucao: string;
   dataDevolucao?: string | null;
+  /** Só em reservas: último dia para retirar o livro na biblioteca. */
+  retirarAte?: string | null;
   status: StatusEmprestimo;
   observacao?: string | null;
   usuario: Usuario;
@@ -81,6 +85,8 @@ export type Field =
   | { name: string; label: string; type: 'text' | 'email' | 'number' | 'date'; required?: boolean; maxLength?: number; placeholder?: string }
   /** Somente dígitos, com tamanho exato (CPF, CEP). */
   | { name: string; label: string; type: 'digits'; required?: boolean; length: number; placeholder?: string }
+  /** Senha de acesso (8 a 72 caracteres). soCadastro: só aparece ao cadastrar (a API troca senha em outra rota). */
+  | { name: string; label: string; type: 'password'; required?: boolean; placeholder?: string; hint?: string; soCadastro?: boolean }
   /** Sigla de estado com 2 letras. */
   | { name: string; label: string; type: 'uf'; required?: boolean; placeholder?: string }
   | { name: string; label: string; type: 'enum'; required?: boolean; options: Option[] }
@@ -105,7 +111,7 @@ export interface Resource<T = any> {
   subtitle: (item: T) => string;
   /** Colunas da tabela (web) / detalhes do card (mobile). */
   details: (item: T) => { label: string; value: string }[];
-  badge?: (item: T) => { text: string; tone: 'ok' | 'warn' | 'danger' } | undefined;
+  badge?: (item: T) => { text: string; tone: 'ok' | 'warn' | 'danger' | 'info' } | undefined;
   toForm: (item?: T) => FormValues;
   toPayload: (values: FormValues) => unknown;
 }
@@ -114,6 +120,7 @@ export const STATUS_OPTIONS: Option[] = [
   { value: 'ATIVO', label: 'Ativo' },
   { value: 'DEVOLVIDO', label: 'Devolvido' },
   { value: 'ATRASADO', label: 'Atrasado' },
+  { value: 'RESERVADO', label: 'Reservado' },
 ];
 
 export const STATUS_CARTEIRINHA_OPTIONS: Option[] = [
@@ -138,7 +145,7 @@ const ids = (v: string | string[] | undefined) => (Array.isArray(v) ? v.map(Numb
 // formatDate, isValidIsoDate e today ficam em utils/dates.js (JavaScript puro).
 export { formatDate, isValidIsoDate, today };
 
-const statusTone = { ATIVO: 'ok', DEVOLVIDO: 'warn', ATRASADO: 'danger' } as const;
+const statusTone = { ATIVO: 'ok', DEVOLVIDO: 'warn', ATRASADO: 'danger', RESERVADO: 'info' } as const;
 
 const livros: Resource<Livro> = {
   key: 'livros',
@@ -272,7 +279,6 @@ const usuarios: Resource<Usuario> = {
     { name: 'nome', label: 'Nome', type: 'text', required: true, maxLength: 100, placeholder: 'Henrique Ramos' },
     { name: 'email', label: 'E-mail', type: 'email', required: true, maxLength: 150, placeholder: 'henrique@email.com' },
     { name: 'cpf', label: 'CPF', type: 'digits', required: true, length: 11, placeholder: '12345678909' },
-    { name: 'matricula', label: 'Matrícula', type: 'text', maxLength: 20, placeholder: '2026001' },
     { name: 'tipo', label: 'Tipo', type: 'enum', required: true, options: TIPO_USUARIO_OPTIONS },
     { name: 'telefone', label: 'Telefone', type: 'text', required: true, maxLength: 20, placeholder: '11999999999' },
     { name: 'endereco', label: 'Endereço', type: 'text', required: true, maxLength: 200, placeholder: 'Rua Exemplo, 100' },
@@ -280,6 +286,10 @@ const usuarios: Resource<Usuario> = {
     { name: 'estado', label: 'Estado (UF)', type: 'uf', required: true, placeholder: 'SP' },
     { name: 'cep', label: 'CEP', type: 'digits', required: true, length: 8, placeholder: '01001000' },
     { name: 'dataNascimento', label: 'Data de nascimento', type: 'date', required: true },
+    {
+      name: 'senha', label: 'Senha de acesso', type: 'password', soCadastro: true, placeholder: 'De 8 a 72 caracteres',
+      hint: 'Com a senha, a pessoa entra no app e no site com o e-mail acima. Sem ela, só a biblioteca consegue usar o cadastro.',
+    },
   ],
   title: (u) => u.nome,
   subtitle: (u) => u.email,
@@ -294,7 +304,6 @@ const usuarios: Resource<Usuario> = {
     nome: u?.nome ?? '',
     email: u?.email ?? '',
     cpf: u?.cpf ?? '',
-    matricula: u?.matricula ?? '',
     tipo: u?.tipo ?? 'ALUNO',
     telefone: u?.telefone ?? '',
     endereco: u?.endereco ?? '',
@@ -302,12 +311,12 @@ const usuarios: Resource<Usuario> = {
     estado: u?.estado ?? '',
     cep: u?.cep ?? '',
     dataNascimento: u?.dataNascimento ?? '',
+    senha: '',
   }),
   toPayload: (v) => ({
     nome: str(v.nome),
     email: str(v.email),
     cpf: str(v.cpf),
-    matricula: opt(v.matricula),
     tipo: str(v.tipo) || null,
     telefone: str(v.telefone),
     endereco: str(v.endereco),
@@ -315,6 +324,7 @@ const usuarios: Resource<Usuario> = {
     estado: str(v.estado).toUpperCase(),
     cep: str(v.cep),
     dataNascimento: str(v.dataNascimento) || null,
+    senha: opt(v.senha),
   }),
 };
 
@@ -351,8 +361,8 @@ const carteirinhas: Resource<Carteirinha> = {
   toForm: (c) => ({
     usuarioId: c?.usuario ? String(c.usuario.id) : '',
     numero: c?.numero ?? '',
-    dataEmissao: c?.dataEmissao ?? '',
-    dataValidade: c?.dataValidade ?? '',
+    dataEmissao: c?.dataEmissao ?? today(),
+    dataValidade: c?.dataValidade ?? today(365),
     status: c?.status ?? 'ATIVA',
     limiteEmprestimos: c ? String(c.limiteEmprestimos) : '3',
   }),
@@ -391,7 +401,9 @@ const emprestimos: Resource<Emprestimo> = {
     { label: 'Devolvido em', value: formatDate(e.dataDevolucao ?? undefined) },
   ],
   badge: (e) => ({
-    text: STATUS_OPTIONS.find((o) => o.value === e.status)?.label ?? e.status,
+    text: e.status === 'RESERVADO' && e.retirarAte
+      ? `Reservado · retirar até ${formatDate(e.retirarAte)}`
+      : STATUS_OPTIONS.find((o) => o.value === e.status)?.label ?? e.status,
     tone: statusTone[e.status] ?? 'warn',
   }),
   toForm: (e) => ({
@@ -439,6 +451,7 @@ export function validate(resource: Resource, values: FormValues): Record<string,
     if (f.type === 'date' && !isValidIsoDate(v.trim())) errors[f.name] = 'Informe uma data válida.';
     if (f.type === 'digits' && !new RegExp(`^\\d{${f.length}}$`).test(v.trim())) errors[f.name] = `Informe ${f.length} dígitos, sem pontos ou traço.`;
     if (f.type === 'uf' && !/^[A-Za-z]{2}$/.test(v.trim())) errors[f.name] = 'Informe a sigla com 2 letras (ex.: SP).';
+    if (f.type === 'password' && (v.length < 8 || v.length > 72)) errors[f.name] = 'A senha deve ter de 8 a 72 caracteres.';
   }
   if (resource.key === 'emprestimos' && !errors.dataPrevistaDevolucao) {
     const ini = str(values.dataEmprestimo);

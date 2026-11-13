@@ -1,24 +1,40 @@
 # Biblioteca — app mobile
 
-Aplicativo em **React Native + Expo (SDK 54, React Navigation e styled-components)** que consome a API de biblioteca em Spring Boot do repositório [API-DE-JAVA-](https://github.com/henriqueramoss-dev/API-DE-JAVA-).
+Aplicativo em **React Native + Expo (SDK 54, React Navigation e styled-components)** que consome a API de biblioteca em Spring Boot do repositório [API-BIBLIOTECA](https://github.com/henriqueramoss-dev/API-BIBLIOTECA).
 
-## Telas
+## Duas experiências, como no site
+
+O app tem o mesmo desenho do site, com layout de celular. **O tipo do usuário decide a tela depois do login**: quem é da equipe da biblioteca (tipo Funcionário) abre o **painel de gestão**; clientes (Aluno, Professor e Visitante) abrem o **catálogo** e as **reservas**. O visitante pode ver o catálogo sem entrar.
+
+Todas as rotas da API exigem uma chave de API (`X-API-Key`). Para os visitantes, o app usa a **chave de leitura do catálogo**, que é pública, só lê livros, autores e categorias e não enxerga dado pessoal. O login gera uma **chave de API** (`POST /chaves-api`), que o app envia no cabeçalho `X-API-Key`. A senha nunca é guardada. Funcionário recebe uma chave ADMIN; cliente, LEITURA (só vê o catálogo e as próprias reservas, nunca dados de outras pessoas). Sair revoga a chave no servidor. Se a chave deixar de valer (revogada, ou a API reiniciou), o app volta para a tela de entrada.
+
+### Área do cliente
 
 | Tela | O que faz |
 |---|---|
-| Início, Entrar e Criar conta | Boas-vindas; o login confere e-mail e senha na API (`POST /auth/login`) e o cadastro cria o **Usuário** (com senha e dados pessoais) |
-| Configurações | Engrenagem no cabeçalho do painel: tema claro/escuro/automático, capas reais de livros, lembretes de devolução (notificações locais), troca de senha e saída da conta |
-| Painel | Empréstimos ativos, devolvidos e atrasados, totais de cada cadastro e atalhos |
-| Empréstimos | Lista com filtro por status (`/emprestimos/buscar?status=`) |
+| Catálogo | Livros em duas colunas, com busca por título, filtro por categoria e a situação de cada livro (Disponível ou Indisponível). O botão Reservar leva ao login se o visitante não entrou |
+| Livro | Ficha do livro (categoria, onde encontrar, editora, ano, páginas, ISBN) e o botão de reservar |
+| Minhas reservas | Reservas aguardando retirada (com o último dia para retirar), empréstimos e devoluções; permite cancelar uma reserva |
+
+Regras (as mesmas do site): a reserva separa o livro por 3 dias; cada pessoa pode ter até 3 reservas; livro emprestado ou já reservado por outra pessoa não pode ser reservado.
+
+### Painel da biblioteca (equipe)
+
+| Tela | O que faz |
+|---|---|
+| Início, Entrar e Criar conta | Boas-vindas; o cadastro cria só contas de **Aluno ou Visitante** (a API não aceita outros tipos no cadastro aberto) e já entra sozinho; a matrícula é gerada pela API |
+| Configurações | Engrenagem no cabeçalho: tema claro/escuro/automático, capas reais de livros, lembretes de devolução (notificações locais), troca de senha e saída da conta |
+| Painel | Empréstimos ativos, devolvidos, atrasados e reservados, totais de cada cadastro e atalhos |
+| Empréstimos | Lista com filtro por status (`/emprestimos/buscar?status=`). Em uma reserva, o botão **Confirmar retirada** a transforma em empréstimo ativo por 14 dias |
 | Livros | Lista com busca por título; ao tocar abre os **detalhes do livro**, com a situação (disponível ou emprestado) e o botão para registrar empréstimo |
 | Autores, Categorias, Usuários e Carteirinhas | Lista com busca, atualização ao puxar a tela e carregamento de mais itens ao rolar |
-| Formulário | Cadastro e edição de qualquer entidade: seleção de livro, usuário, categoria e autores, datas no formato DD/MM/AAAA e erros de validação da API exibidos em cada campo |
+| Formulário | Cadastro e edição de qualquer entidade: seleção de livro, usuário, categoria e autores, datas no formato DD/MM/AAAA e erros de validação da API exibidos em cada campo. No cadastro de usuário, a **senha de acesso** é definida aqui (sem ela, a pessoa não consegue entrar). A carteirinha já abre com emissão de hoje e validade de 1 ano |
 
-Todas as listas permitem excluir registros, com confirmação.
+Os botões seguem o nível de acesso da chave: criar e editar (ESCRITA) e excluir (ADMIN), sempre com confirmação.
 
 ## Como executar
 
-1. Inicie a API (`biblioteca-api` no repositório API-DE-JAVA-). Ela deve responder em `http://localhost:8080`.
+1. O app já usa a API publicada em `https://api-biblioteca-xgsa.onrender.com`, que carrega um acervo de exemplo. Para entrar como cliente, use `beatriz@exemplo.com` / `Cliente12345`; para o painel, a conta do dono configurada na API (`BIBLIOTECA_DONO_EMAIL` e `BIBLIOTECA_DONO_SENHA`).
 2. Instale as dependências e inicie o app:
 
    ```bash
@@ -30,13 +46,19 @@ Todas as listas permitem excluir registros, com confirmação.
 
 ### Endereço da API
 
-Por padrão, o app procura a API no mesmo computador que está rodando o Expo, na porta 8080. Isso funciona no Expo Go do celular quando ele e o computador estão na mesma rede Wi-Fi.
+Por padrão, o app usa a API publicada na Render, tanto no desenvolvimento quanto no app instalado:
 
-Para usar outro endereço, crie um arquivo `.env` na raiz do projeto com a linha abaixo (trocando pelo IP do seu computador) e reinicie o Expo:
+```text
+https://api-biblioteca-xgsa.onrender.com
+```
+
+Para usar outra API (por exemplo, uma que rode no seu computador, que o celular alcança pelo IP dele na rede Wi-Fi), crie um arquivo `.env` na raiz do projeto com a linha abaixo, trocando pelo endereço, e reinicie o Expo:
 
 ```bash
-EXPO_PUBLIC_API_URL=http://192.168.0.10:8080
+EXPO_PUBLIC_API_URL=https://api-biblioteca-xgsa.onrender.com
 ```
+
+Na API gratuita da Render, a primeira abertura depois de um tempo parada leva cerca de 1 minuto.
 
 ## Visual de biblioteca e capas de livros
 

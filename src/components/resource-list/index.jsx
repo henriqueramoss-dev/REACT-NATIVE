@@ -9,8 +9,9 @@ import StatusBadge from "../status-badge"
 import CapaDoLivro from "../capa-do-livro"
 import { PilhaDeLivros } from "../ilustracoes"
 import { useAppTheme } from "../../contexts/theme-context"
-import { list, remove } from "../../services/biblioteca-api"
-import { RESOURCES } from "../../services/resources"
+import { useAuth } from "../../contexts/auth-context"
+import { list, remove, update } from "../../services/biblioteca-api"
+import { RESOURCES, today } from "../../services/resources"
 import { avisar, confirmar } from "../../utils/dialogs"
 
 import {
@@ -42,7 +43,9 @@ import {
     RowDetailLabel,
     BadgeRow,
     Actions,
-    IconButton
+    IconButton,
+    PickupButton,
+    PickupButtonText
 } from "./style"
 
 const PAGE_SIZE = 15
@@ -55,6 +58,7 @@ const ResourceList = ({ resourceKey }) => {
     const route = useRoute()
     const insets = useSafeAreaInsets()
     const { colors } = useAppTheme()
+    const { pode } = useAuth()
 
     const resource = RESOURCES[resourceKey]
 
@@ -168,6 +172,35 @@ const ResourceList = ({ resourceKey }) => {
         }
     }
 
+    // A PESSOA CHEGOU NA BIBLIOTECA PARA RETIRAR O LIVRO RESERVADO: VIRA UM EMPRÉSTIMO ATIVO DE 14 DIAS A PARTIR DE HOJE
+    const handlePickup = async (item) => {
+
+        const ok = await confirmar(
+            "Confirmar retirada",
+            `Confirmar a retirada de "${resource.title(item)}" por ${item.usuario?.nome}?`,
+            "Confirmar"
+        )
+
+        if (!ok) return
+
+        try {
+
+            await update("emprestimos", item.id, {
+                dataEmprestimo: today(),
+                dataPrevistaDevolucao: today(14),
+                status: "ATIVO",
+                observacao: item.observacao ?? null,
+                usuarioId: item.usuario.id,
+                livroId: item.livro.id
+            })
+
+            load(0, "refresh")
+
+        } catch (e) {
+            avisar("Não foi possível confirmar", e.message)
+        }
+    }
+
     // CARREGA A PRÓXIMA PÁGINA QUANDO CHEGA NO FIM DA LISTA
     const handleEndReached = () => {
         if (!loading && !loadingMore && !error && page < totalPages - 1) {
@@ -200,19 +233,21 @@ const ResourceList = ({ resourceKey }) => {
                         {loading || (error && items.length === 0) ? " " : total === 1 ? "1 registro" : `${total} registros`}
                     </Count>
 
-                    <NewButton onPress={handleNew}>
+                    {pode("ESCRITA") && (
+                        <NewButton onPress={handleNew}>
 
-                        <Ionicons
-                            name="add"
-                            size={18}
-                            color={colors.onPrimary}
-                        />
+                            <Ionicons
+                                name="add"
+                                size={18}
+                                color={colors.onPrimary}
+                            />
 
-                        <NewButtonText>
-                            {resource.newLabel}
-                        </NewButtonText>
+                            <NewButtonText>
+                                {resource.newLabel}
+                            </NewButtonText>
 
-                    </NewButton>
+                        </NewButton>
+                    )}
 
                 </PageHeader>
 
@@ -389,33 +424,45 @@ const ResourceList = ({ resourceKey }) => {
                                     </BadgeRow>
                                 )}
 
+                                {resource.key === "emprestimos" && item.status === "RESERVADO" && pode("ESCRITA") && (
+                                    <PickupButton onPress={() => handlePickup(item)}>
+                                        <PickupButtonText>
+                                            Confirmar retirada
+                                        </PickupButtonText>
+                                    </PickupButton>
+                                )}
+
                             </RowBody>
 
                             <Actions>
 
-                                <IconButton
-                                    onPress={() => handleEdit(item)}
-                                    hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
-                                    accessibilityLabel={`Editar ${resource.title(item)}`}
-                                >
-                                    <Ionicons
-                                        name="pencil-outline"
-                                        size={18}
-                                        color={colors.textMuted}
-                                    />
-                                </IconButton>
+                                {pode("ESCRITA") && (
+                                    <IconButton
+                                        onPress={() => handleEdit(item)}
+                                        hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                                        accessibilityLabel={`Editar ${resource.title(item)}`}
+                                    >
+                                        <Ionicons
+                                            name="pencil-outline"
+                                            size={18}
+                                            color={colors.textMuted}
+                                        />
+                                    </IconButton>
+                                )}
 
-                                <IconButton
-                                    onPress={() => handleDelete(item)}
-                                    hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
-                                    accessibilityLabel={`Excluir ${resource.title(item)}`}
-                                >
-                                    <Ionicons
-                                        name="trash-outline"
-                                        size={18}
-                                        color={colors.textMuted}
-                                    />
-                                </IconButton>
+                                {pode("ADMIN") && (
+                                    <IconButton
+                                        onPress={() => handleDelete(item)}
+                                        hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                                        accessibilityLabel={`Excluir ${resource.title(item)}`}
+                                    >
+                                        <Ionicons
+                                            name="trash-outline"
+                                            size={18}
+                                            color={colors.textMuted}
+                                        />
+                                    </IconButton>
+                                )}
 
                             </Actions>
 

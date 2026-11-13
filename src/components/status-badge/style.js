@@ -6,7 +6,8 @@ import styled from "styled-components/native"
 const tons = {
     ok: { fundo: "successSoft", texto: "success" },
     warn: { fundo: "neutralSoft", texto: "textMuted" },
-    danger: { fundo: "dangerSoft", texto: "danger" }
+    danger: { fundo: "dangerSoft", texto: "danger" },
+    info: { fundo: "primarySoft", texto: "primary" }
 }
 
 

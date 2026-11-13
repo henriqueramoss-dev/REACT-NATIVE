@@ -119,6 +119,22 @@ const FormField = ({ field, value, error, onChange }) => {
             )
             break
 
+        case "password":
+            input = (
+                <Input
+                    $error={!!error}
+                    value={text}
+                    onChangeText={onChange}
+                    placeholder={field.placeholder}
+                    placeholderTextColor={colors.placeholder}
+                    secureTextEntry
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    maxLength={72}
+                />
+            )
+            break
+
         case "digits":
             input = (
                 <Input
@@ -173,6 +189,12 @@ const FormField = ({ field, value, error, onChange }) => {
             </Label>
 
             {input}
+
+            {field.type === "password" && field.hint && (
+                <Hint>
+                    {field.hint}
+                </Hint>
+            )}
 
             {error && (
                 <ErrorText>

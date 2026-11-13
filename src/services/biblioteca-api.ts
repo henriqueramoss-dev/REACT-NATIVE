@@ -1,5 +1,3 @@
-import Constants from 'expo-constants';
-
 // Cliente HTTP da Biblioteca API (Spring Boot + HATEOAS).
 
 export type Id = number;
@@ -24,20 +22,19 @@ export class ApiError extends Error {
   }
 }
 
+// API publicada na Render: é o endereço padrão, em desenvolvimento e no app instalado.
+const API_PUBLICADA = 'https://api-biblioteca-xgsa.onrender.com';
+
 /**
  * Ordem de prioridade:
- * 1. EXPO_PUBLIC_API_URL (arquivo .env)
- * 2. IP do computador que está rodando o Expo, na porta 8080 (funciona no celular físico)
- * 3. http://localhost:8080
+ * 1. EXPO_PUBLIC_API_URL (arquivo .env), para usar outra API, como uma que rode no seu computador
+ * 2. a API publicada na Render
  */
 function resolveBaseUrl() {
   const fromEnv = process.env.EXPO_PUBLIC_API_URL;
   if (fromEnv) return fromEnv.replace(/\/+$/, '');
 
-  const host = Constants.expoConfig?.hostUri?.split(':')[0];
-  if (host && host !== 'localhost' && host !== '127.0.0.1') return `http://${host}:8080`;
-
-  return 'http://localhost:8080';
+  return API_PUBLICADA;
 }
 
 const baseUrl = resolveBaseUrl();
@@ -46,11 +43,32 @@ export function getBaseUrl() {
   return baseUrl;
 }
 
+// Chave de API enviada no cabeçalho X-API-Key. Vem do login (POST /chaves-api) e fica no contexto de autenticação.
+// Chave de LEITURA do catálogo: pública por natureza (fica neste código), não pertence a ninguém e só lê livros,
+// autores e categorias. É a que os visitantes usam; quem entra passa a usar a própria chave.
+export const CHAVE_DO_CATALOGO: string = process.env.EXPO_PUBLIC_API_KEY || 'bib_catalogo_aberto_da_biblioteca_2026';
+
+let apiKey: string = CHAVE_DO_CATALOGO;
+
+// Sem chave (sair, sessão que caiu), volta para a chave do catálogo.
+export function setApiKey(chave: string | undefined) {
+  apiKey = (chave ?? '').trim() || CHAVE_DO_CATALOGO;
+}
+
+// Chamada quando a API recusa a chave em uso (401): chave revogada ou API reiniciada. O login volta ao estado de visitante.
+let aoNaoAutorizado: (() => void) | undefined;
+
+export function setOnUnauthorized(callback: (() => void) | undefined) {
+  aoNaoAutorizado = callback;
+}
+
 const DEFAULT_MESSAGES: Record<number, string> = {
   400: 'Dados inválidos. Verifique os campos informados.',
-  401: 'E-mail ou senha incorretos.',
+  401: 'Entre com seu e-mail e senha para continuar.',
+  403: 'Seu nível de acesso não permite esta operação.',
   404: 'Registro não encontrado.',
   409: 'Operação não permitida: dado duplicado ou registro em uso.',
+  429: 'Muitas requisições em pouco tempo. Aguarde alguns segundos e tente de novo.',
 };
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
@@ -58,7 +76,12 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   try {
     res = await fetch(baseUrl + path, {
       ...init,
-      headers: { 'Content-Type': 'application/json', Accept: 'application/hal+json', ...init.headers },
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/hal+json',
+        ...(apiKey ? { 'X-API-Key': apiKey } : {}),
+        ...init.headers,
+      },
     });
   } catch {
     throw new ApiError(0, `Não foi possível conectar à API em ${baseUrl}. Ela está rodando?`);
@@ -73,6 +96,9 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   } catch {
     body = undefined;
   }
+
+  // 401 com uma chave de conta (revogada, API reiniciada): a sessão terminou. A chave do catálogo não é sessão.
+  if (res.status === 401 && apiKey !== CHAVE_DO_CATALOGO) aoNaoAutorizado?.();
 
   if (!res.ok) {
     const mensagem = body?.mensagem ?? DEFAULT_MESSAGES[res.status] ?? `Erro ${res.status} ao chamar a API.`;
@@ -128,9 +154,47 @@ export async function remove(resource: string, id: Id): Promise<void> {
   await request(`/${resource}/${id}`, { method: 'DELETE' });
 }
 
-/** Confere e-mail e senha (POST /auth/login) e devolve o usuário. A API ainda não gera token. */
-export async function login<T>(email: string, senha: string): Promise<T> {
-  return strip<T>(await request('/auth/login', { method: 'POST', body: JSON.stringify({ email, senha }) }));
+export type Nivel = 'LEITURA' | 'ESCRITA' | 'ADMIN';
+
+export type ChaveCriada = {
+  id: Id;
+  chave: string;
+  nivel: Nivel;
+  usuarioId?: Id;
+  usuarioNome?: string;
+  /** FUNCIONARIO é a equipe/dono da biblioteca; os demais tipos são clientes. */
+  usuarioTipo?: string;
+};
+
+/** Entra: confere e-mail e senha e gera uma chave de API (POST /chaves-api). A chave completa só vem nesta resposta. */
+export async function gerarChave(email: string, senha: string, nivel: Nivel): Promise<ChaveCriada> {
+  const body = await request<any>('/chaves-api', {
+    method: 'POST',
+    body: JSON.stringify({ email: email.trim(), senha, nome: 'App da Biblioteca', nivel }),
+  });
+  return {
+    id: body.id,
+    chave: body.chave,
+    nivel: body.nivel,
+    usuarioId: body.usuarioId,
+    usuarioNome: body.usuarioNome,
+    usuarioTipo: body.usuarioTipo,
+  };
+}
+
+/** Revoga uma chave: ela deixa de funcionar na hora. */
+export async function revogarChave(id: Id): Promise<void> {
+  await request(`/chaves-api/${id}`, { method: 'DELETE' });
+}
+
+/** Reserva um livro para o dono da chave (POST /reservas). Devolve o empréstimo com status RESERVADO e retirarAte. */
+export async function reservarLivro<T = any>(livroId: Id, observacao?: string): Promise<T> {
+  return strip<T>(await request('/reservas', { method: 'POST', body: JSON.stringify({ livroId, observacao: observacao || null }) }));
+}
+
+/** Cancela uma reserva ainda não retirada (DELETE /reservas/{id}). */
+export async function cancelarReserva(id: Id): Promise<void> {
+  await request(`/reservas/${id}`, { method: 'DELETE' });
 }
 
 /** Troca a senha (PUT /usuarios/{id}/senha). Se a senha atual estiver errada, a API responde 400 com campos.senhaAtual. */

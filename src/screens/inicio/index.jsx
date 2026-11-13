@@ -42,9 +42,9 @@ const Inicio = () => {
         navigation.navigate("Cadastro")
     }
 
-    // ENTRAR NO PAINEL SEM LOGIN (PROTÓTIPO)
-    const handleDemo = () => {
-        navigation.navigate("Painel")
+    // VER O CATÁLOGO SEM LOGIN (PARA RESERVAR, É PRECISO ENTRAR)
+    const handleCatalogo = () => {
+        navigation.navigate("Catalogo")
     }
 
     return (
@@ -77,7 +77,7 @@ const Inicio = () => {
                 </Title>
 
                 <Description>
-                    Consulte o acervo, acompanhe seus empréstimos e encontre novos livros.
+                    Escolha um livro, reserve pelo app e retire na biblioteca.
                 </Description>
 
                 <PrimaryButton onPress={handleLogin}>
@@ -92,8 +92,8 @@ const Inicio = () => {
                     </SecondaryButtonText>
                 </SecondaryButton>
 
-                <DemoLink onPress={handleDemo}>
-                    Ver protótipo sem login
+                <DemoLink onPress={handleCatalogo}>
+                    Ver o catálogo sem entrar
                 </DemoLink>
 
             </Content>
