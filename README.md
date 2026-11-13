@@ -103,3 +103,17 @@ Para incluir um novo campo ou entidade, basta descrevê-lo em `src/services/reso
 npm run lint      # ESLint (expo lint)
 npx tsc --noEmit  # verificação de tipos
 ```
+
+## Testar no emulador Android
+
+Com o Android Studio instalado e um emulador criado (Virtual Device Manager):
+
+```bash
+npm install
+npm run android:emuladores   # mostra os emuladores encontrados
+npm run android:emulador     # liga o emulador (se preciso) e abre o app nele
+```
+
+- `AVD=Nome_do_emulador npm run android:emulador` escolhe um emulador específico.
+- `npm run navegador` abre o app no navegador (use o modo dispositivo do DevTools para testar tamanhos de tela).
+- Roteiros automáticos de toque e tela (Maestro): veja `.maestro/README.md` e rode `npm run teste:emulador`.

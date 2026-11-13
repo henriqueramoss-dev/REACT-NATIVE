@@ -1,0 +1,21 @@
+# Dono: entra e vê o painel de gestão. Informe a senha: maestro test -e SENHA_DONO=... .maestro/03-dono.yaml
+appId: host.exp.exponent
+tags:
+  - dono
+env:
+  SENHA_DONO: ""
+---
+- openLink: exp://127.0.0.1:8081
+- extendedWaitUntil:
+    visible: "Entrar"
+    timeout: 60000
+- tapOn: "Entrar"
+- tapOn: "seu@email.com"
+- inputText: "dono@biblioteca.com"
+- tapOn: "Digite sua senha"
+- inputText: ${SENHA_DONO}
+- hideKeyboard
+- tapOn: "Entrar"
+- extendedWaitUntil:
+    visible: "Visão geral do acervo e dos empréstimos."
+    timeout: 90000

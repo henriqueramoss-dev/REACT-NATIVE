@@ -1,0 +1,17 @@
+# Cliente: entra com a conta de exemplo e chega ao catálogo.
+appId: host.exp.exponent
+---
+- openLink: exp://127.0.0.1:8081
+- extendedWaitUntil:
+    visible: "Entrar"
+    timeout: 60000
+- tapOn: "Entrar"
+- tapOn: "seu@email.com"
+- inputText: "beatriz@exemplo.com"
+- tapOn: "Digite sua senha"
+- inputText: "Cliente12345"
+- hideKeyboard
+- tapOn: "Entrar"
+- extendedWaitUntil:
+    visible: "Escolha seu próximo livro"
+    timeout: 90000

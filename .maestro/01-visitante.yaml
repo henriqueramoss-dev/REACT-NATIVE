@@ -1,0 +1,12 @@
+# Visitante: abre o app, vê o catálogo sem entrar e volta.
+appId: host.exp.exponent
+---
+- openLink: exp://127.0.0.1:8081
+- extendedWaitUntil:
+    visible: "Ver o catálogo sem entrar"
+    timeout: 60000
+- tapOn: "Ver o catálogo sem entrar"
+- extendedWaitUntil:
+    visible: "Escolha seu próximo livro"
+    timeout: 60000
+- assertVisible: "Buscar por título"
