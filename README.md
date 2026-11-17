@@ -117,3 +117,15 @@ npm run android:emulador     # liga o emulador (se preciso) e abre o app nele
 - `AVD=Nome_do_emulador npm run android:emulador` escolhe um emulador específico.
 - `npm run navegador` abre o app no navegador (use o modo dispositivo do DevTools para testar tamanhos de tela).
 - Roteiros automáticos de toque e tela (Maestro): veja `.maestro/README.md` e rode `npm run teste:emulador`.
+
+## Gerar o APK
+
+O perfil `preview` do `eas.json` gera um arquivo `.apk` para instalar direto no Android (o pacote é `com.biblioteca.app`, definido no `app.json`). É preciso ter uma conta gratuita em https://expo.dev.
+
+```bash
+npm install -g eas-cli
+eas login
+npm run apk
+```
+
+Ao terminar, o terminal mostra um link e um QR Code para baixar o APK. No celular, baixe o arquivo e permita instalar apps de fontes desconhecidas. O app usa a API publicada, que pode demorar no primeiro acesso se estiver dormindo.
