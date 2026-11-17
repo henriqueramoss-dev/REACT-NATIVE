@@ -11,7 +11,8 @@
     "android:emulador": "node scripts/android.js",
     "android:emuladores": "node scripts/android.js --lista",
     "teste:emulador": "maestro test .maestro --exclude-tags=dono",
-    "navegador": "expo start --web"
+    "navegador": "expo start --web",
+    "apk": "eas build -p android --profile preview"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
